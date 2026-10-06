@@ -164,7 +164,7 @@ export function Budget() {
             <Badge>{period[kind].length} рядків</Badge>
           </div>
           <div className="table-scroll">
-            <table>
+            <table className="editable-table budget-table">
               <thead>
                 <tr>
                   <th>Назва</th>
@@ -179,7 +179,7 @@ export function Budget() {
               <tbody>
                 {period[kind].map((l) => (
                   <tr key={l.id}>
-                    <td>
+                    <td data-label="Назва">
                       <input
                         aria-label={`Назва ${l.name}`}
                         value={l.name}
@@ -189,22 +189,14 @@ export function Budget() {
                         }
                       />
                     </td>
-                    <td>
-                      <input
-                        aria-label={`Сума ${l.name}`}
-                        type="number"
-                        inputMode="decimal"
-                        min={0}
-                        max={1e12}
+                    <td data-label="Сума">
+                      <Field
+                        label={`Сума ${l.name}`}
                         value={l.amount}
-                        onChange={(e) => {
-                          const n = Number(e.target.value);
-                          if (n >= 0 && n <= 1e12)
-                            line(kind, l.id, { amount: n });
-                        }}
+                        onChange={(amount) => line(kind, l.id, { amount })}
                       />
                     </td>
-                    <td>
+                    <td data-label="Валюта">
                       <select
                         aria-label={`Валюта ${l.name}`}
                         value={l.currency}
@@ -221,7 +213,7 @@ export function Budget() {
                         ))}
                       </select>
                     </td>
-                    <td>
+                    <td data-label="Частота">
                       <select
                         aria-label={`Частота ${l.name}`}
                         value={l.frequency}
@@ -237,7 +229,14 @@ export function Budget() {
                         <option value="once">Разово в цьому місяці</option>
                       </select>
                     </td>
-                    <td>
+                    <td
+                      data-label={
+                        kind === "incomes"
+                          ? "Стабільний дохід"
+                          : "Обов’язкові витрати"
+                      }
+                      className="table-check"
+                    >
                       <input
                         type="checkbox"
                         aria-label={`${kind === "incomes" ? "Стабільний" : "Обов’язкові"} ${l.name}`}
@@ -254,7 +253,7 @@ export function Budget() {
                       />
                     </td>
                     {kind === "expenses" && (
-                      <td>
+                      <td data-label="Борговий платіж" className="table-check">
                         <input
                           type="checkbox"
                           aria-label={`Борговий платіж ${l.name}`}
@@ -265,7 +264,7 @@ export function Budget() {
                         />
                       </td>
                     )}
-                    <td>
+                    <td className="table-delete">
                       <button
                         className="icon-button"
                         aria-label={`Видалити ${l.name}`}

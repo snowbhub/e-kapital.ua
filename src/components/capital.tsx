@@ -200,7 +200,7 @@ export function Capital() {
         </div>
         {state.holdings.length ? (
           <div className="table-scroll">
-            <table>
+            <table className="editable-table">
               <thead>
                 <tr>
                   <th>Актив</th>
@@ -213,32 +213,27 @@ export function Capital() {
               <tbody>
                 {state.holdings.map((h) => (
                   <tr key={h.id}>
-                    <td>{h.name}</td>
-                    <td>
+                    <td data-label="Актив">{h.name}</td>
+                    <td data-label="Тип">
                       {assets.find((a) => a.id === h.assetId)?.name ??
                         h.assetId}
                     </td>
-                    <td>
-                      <input
-                        aria-label={`Вартість ${h.name}`}
-                        type="number"
-                        min={0}
-                        max={1e12}
+                    <td data-label="Поточна оцінка">
+                      <Field
+                        label={`Вартість ${h.name}`}
                         value={h.value}
-                        onChange={(e) => {
-                          const value = Number(e.target.value);
-                          if (value >= 0 && value <= 1e12)
-                            update((s) => ({
-                              ...s,
-                              holdings: s.holdings.map((x) =>
-                                x.id === h.id ? { ...x, value } : x,
-                              ),
-                            }));
-                        }}
+                        onChange={(value) =>
+                          update((s) => ({
+                            ...s,
+                            holdings: s.holdings.map((x) =>
+                              x.id === h.id ? { ...x, value } : x,
+                            ),
+                          }))
+                        }
                       />
                     </td>
-                    <td>{h.currency}</td>
-                    <td>
+                    <td data-label="Валюта">{h.currency}</td>
+                    <td className="table-delete">
                       <button
                         className="icon-button"
                         aria-label={`Видалити актив ${h.name}`}
@@ -268,7 +263,7 @@ export function Capital() {
         <Card>
           <h2 style={{ marginBottom: 20 }}>Зобов’язання</h2>
           <div className="table-scroll">
-            <table>
+            <table className="editable-table">
               <thead>
                 <tr>
                   <th>Назва</th>
@@ -280,27 +275,23 @@ export function Capital() {
               <tbody>
                 {state.liabilities.map((l) => (
                   <tr key={l.id}>
-                    <td>{l.name}</td>
-                    <td>
-                      <input
-                        aria-label={`Залишок боргу ${l.name}`}
-                        type="number"
-                        min={0}
+                    <td data-label="Назва">{l.name}</td>
+                    <td data-label="Залишок">
+                      <Field
+                        label={`Залишок боргу ${l.name}`}
                         value={l.value}
-                        onChange={(e) => {
-                          const value = Number(e.target.value);
-                          if (value >= 0)
-                            update((s) => ({
-                              ...s,
-                              liabilities: s.liabilities.map((x) =>
-                                x.id === l.id ? { ...x, value } : x,
-                              ),
-                            }));
-                        }}
+                        onChange={(value) =>
+                          update((s) => ({
+                            ...s,
+                            liabilities: s.liabilities.map((x) =>
+                              x.id === l.id ? { ...x, value } : x,
+                            ),
+                          }))
+                        }
                       />
                     </td>
-                    <td>{l.currency}</td>
-                    <td>
+                    <td data-label="Валюта">{l.currency}</td>
+                    <td className="table-delete">
                       <button
                         className="icon-button"
                         aria-label={`Видалити борг ${l.name}`}
