@@ -37,7 +37,7 @@ const icons = {
   fx: TrendingUp,
 };
 export function DecisionWorkspace() {
-  const { state, update, market } = useCapital();
+  const { state, update, persist, market } = useCapital();
   const input = state.decision.inputs;
   const resume = state.decision.plans.find(
     (p) => p.id === state.decision.resumeId && p.kind === "investment",
@@ -147,10 +147,10 @@ export function DecisionWorkspace() {
         "Знайти пропозицію банку й перевірити чисту ставку та дострокове повернення.",
       fx: "Перевірити фактичний курс купівлі/продажу та валюту майбутньої цілі.",
     })[kind];
-  function save() {
+  async function save() {
     if (!selected || !selectedResult) return;
     const id = crypto.randomUUID();
-    update((s) => ({
+    const stored = await persist((s) => ({
       ...s,
       decision: {
         ...s.decision,
@@ -176,7 +176,7 @@ export function DecisionWorkspace() {
         ],
       },
     }));
-    setSavedId(id);
+    if (stored) setSavedId(id);
   }
   return (
     <>

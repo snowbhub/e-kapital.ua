@@ -10,12 +10,15 @@ export function useProfile() {
   const chain = useRef(Promise.resolve());
   const revision = useRef(0);
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const current = useRef(state);
   useEffect(() => {
     let active = true;
     loadState()
       .then((value) => {
         if (active) {
-          setState(rollover(value || initialState()));
+          const loaded = rollover(value || initialState());
+          current.current = loaded;
+          setState(loaded);
           setReady(true);
         }
       })
@@ -54,8 +57,30 @@ export function useProfile() {
   const update = useCallback((fn: (s: State) => State) => {
     revision.current++;
     setSaved(false);
-    setState((s) => fn(s));
+    const next = fn(current.current);
+    current.current = next;
+    setState(next);
   }, []);
+  // Explicit save actions must confirm an IndexedDB commit, not a debounced draft.
+  const persist = useCallback(
+    async (fn: (s: State) => State) => {
+      if (pending.current) clearTimeout(pending.current);
+      update(fn);
+      const snapshot = current.current;
+      const write = chain.current.then(() => saveState(snapshot));
+      chain.current = write.catch(() => {});
+      try {
+        await write;
+        return true;
+      } catch {
+        setError(
+          "Не вдалося зберегти план. Перевірте дозвіл браузера на зберігання та спробуйте знову.",
+        );
+        return false;
+      }
+    },
+    [update],
+  );
   const erase = useCallback(async () => {
     revision.current++;
     if (pending.current) clearTimeout(pending.current);
@@ -63,9 +88,10 @@ export function useProfile() {
     await deleteState();
     const blank = initialState();
     await saveState(blank);
+    current.current = blank;
     setState(blank);
     setError("");
     setSaved(true);
   }, []);
-  return { state, update, ready, error, saved, erase };
+  return { state, update, persist, ready, error, saved, erase };
 }

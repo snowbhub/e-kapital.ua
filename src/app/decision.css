@@ -2,6 +2,22 @@
 .app-content {
   min-width: 0;
 }
+.app-content .form-grid > *,
+.app-content .field select,
+.app-content .goal-card {
+  min-width: 0;
+  max-width: 100%;
+}
+.app-content .goal-meta {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+@media (min-width: 761px) {
+  .app-content .form-grid,
+  .app-content .goal-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 .decision-loading {
   min-height: 480px;
   padding-top: 20px;

@@ -1,7 +1,9 @@
 /* App-shell and public-market cache only. Financial state stays in IndexedDB. */
-const VERSION = "ek-shell-v1";
+const VERSION = "ek-shell-v2";
 const CORE = [
   "/app",
+  "/app/home",
+  "/app/plan",
   "/app/budget",
   "/app/reserve",
   "/app/goals",
@@ -57,6 +59,9 @@ self.addEventListener("fetch", (event) => {
   const req = event.request,
     url = new URL(req.url);
   if (req.method !== "GET" || url.origin !== self.location.origin) return;
+  // Next router prefetches may be cancelled. Let the browser handle their
+  // lifetime and headers; they are not offline HTML navigation responses.
+  if (req.headers.has("RSC") || url.searchParams.has("_rsc")) return;
   if (
     url.pathname.startsWith("/api/") &&
     !["/api/market", "/api/history"].includes(url.pathname)

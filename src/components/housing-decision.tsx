@@ -8,7 +8,7 @@ import { compareHousing, decisionReferences } from "@/lib/finance/decision";
 import { fmt, dateFmt, today, pct } from "@/lib/format";
 
 export function HousingDecision() {
-  const { state, update, market } = useCapital();
+  const { state, update, persist, market } = useCapital();
   const input = state.decision.inputs,
     terms = market.eoselia;
   const resume = state.decision.plans.find(
@@ -100,9 +100,9 @@ export function HousingDecision() {
     choice === "wait"
       ? "Порівняти інструменти до дати першого внеску та перевірити їхню ліквідність."
       : "Перевірити право на єОселю, отримати пропозицію банку й уточнити всі витрати та резерв на платежі.";
-  function save() {
+  async function save() {
     if (!r) return;
-    update((s) => ({
+    const stored = await persist((s) => ({
       ...s,
       decision: {
         ...s.decision,
@@ -135,7 +135,7 @@ export function HousingDecision() {
         ],
       },
     }));
-    setSaved(true);
+    if (stored) setSaved(true);
   }
   return (
     <>
