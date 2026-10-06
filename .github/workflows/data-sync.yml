@@ -9,7 +9,7 @@ on:
       - "scripts/ingest.ts"
       - ".github/workflows/data-sync.yml"
   schedule:
-    - cron: "30 6 * * *"
+    - cron: "30 */6 * * *"
   workflow_dispatch:
 permissions:
   contents: write

@@ -14,8 +14,11 @@ const CORE = [
   "/offline.html",
   "/manifest.webmanifest",
   "/api/market",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
+  "/icons/wallet-192.png",
+  "/icons/wallet-512.png",
+  "/icons/wallet-180.png",
+  "/icons/wallet-maskable-512.png",
+  "/app/scenario",
 ];
 self.addEventListener("install", (event) =>
   event.waitUntil(

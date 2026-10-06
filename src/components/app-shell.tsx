@@ -29,6 +29,7 @@ const nav = [
   ["plan", "Мої плани", Bookmark],
 ] as const;
 const extraNav = [
+  ["scenario", "Свій розрахунок", ChartNoAxesCombined],
   ["overview", "Огляд активів", LayoutDashboard],
   ["budget", "Бюджет", Wallet],
   ["reserve", "Резерв", Shield],
@@ -106,7 +107,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {error}
           </div>
         )}
-        <div key={state.decision.resumeId ?? "new"} className="app-content">
+        <div
+          key={`${path}-${state.decision.resumeId ?? "new"}`}
+          className="app-content page-enter"
+        >
           {ready ? (
             children
           ) : (

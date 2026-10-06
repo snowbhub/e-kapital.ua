@@ -202,7 +202,13 @@ export function initialState(): State {
     onboarded: false,
     decision: {
       resumeId: null,
-      inputs: { capital: 0, monthly: 0, months: 12, purpose: "grow" },
+      inputs: {
+        currency: "UAH",
+        capital: 0,
+        monthly: 0,
+        months: 12,
+        purpose: "grow",
+      },
       plans: [],
     },
     currentPeriod: monthKey(),

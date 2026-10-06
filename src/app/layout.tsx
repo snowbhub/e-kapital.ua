@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./decision.css";
+import "./automatic.css";
 import { Pwa } from "@/components/pwa";
 import { siteUrl } from "@/lib/site";
 export const metadata: Metadata = {
@@ -10,10 +11,10 @@ export const metadata: Metadata = {
     template: "%s | єКапітал",
   },
   description:
-    "Плануйте бюджет, створюйте резерв, збирайте на житло та порівнюйте власні інвестиційні сценарії. Особисті дані залишаються на вашому пристрої.",
+    "Порівнюйте готові депозити, валюту, ОВДП та сценарії житла. Ставки, податки й інфляція вже враховані. Особисті суми залишаються на пристрої.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "єКапітал", statusBarStyle: "default" },
-  icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png" },
+  icons: { icon: "/icons/wallet-192.png", apple: "/icons/wallet-180.png" },
   openGraph: {
     type: "website",
     locale: "uk_UA",
