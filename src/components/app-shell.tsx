@@ -15,18 +15,25 @@ import {
   ArrowUpRight,
   Grid2X2,
   X,
+  Home,
+  Bookmark,
 } from "lucide-react";
 import { Logo } from "./header";
 import { useCapital } from "./profile-context";
 import { Onboarding } from "./onboarding";
 import { Badge } from "./ui";
 const nav = [
-  ["", "Огляд", LayoutDashboard],
+  ["", "Порівняти", ChartNoAxesCombined],
+  ["home", "Житло", Home],
+  ["capital", "Мої активи", Landmark],
+  ["plan", "Мої плани", Bookmark],
+] as const;
+const extraNav = [
+  ["overview", "Огляд активів", LayoutDashboard],
   ["budget", "Бюджет", Wallet],
   ["reserve", "Резерв", Shield],
   ["goals", "Мої цілі", Target],
   ["portfolio", "Портфель", ChartNoAxesCombined],
-  ["capital", "Капітал", Landmark],
   ["history", "Історія", History],
   ["settings", "Налаштування", Settings],
 ] as const;
@@ -34,15 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const menu = useRef<HTMLDialogElement>(null);
   const { state, ready, error, saved } = useCapital();
-  if (!ready)
-    return (
-      <main id="main" className="container onboarding">
-        <Logo />
-        <h1>Відкриваємо ваш єКапітал</h1>
-        <p>{error || "Дані зберігаються на цьому пристрої."}</p>
-      </main>
-    );
-  if (!state.onboarded) return <Onboarding />;
+  if (ready && !state.onboarded && path === "/app/setup") return <Onboarding />;
   return (
     <div className="app-layout">
       <aside className="sidebar">
@@ -50,6 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav aria-label="Особистий кабінет">
           {nav.map(([slug, label, Icon]) => (
             <Link
+              prefetch={false}
               href={`/app${slug ? "/" + slug : ""}`}
               className={
                 path === `/app${slug ? "/" + slug : ""}` ? "active" : ""
@@ -65,9 +65,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
         <div className="sidebar-bottom">
+          <button
+            className="sidebar-tools"
+            onClick={() => menu.current?.showModal()}
+            aria-haspopup="dialog"
+          >
+            <Grid2X2 size={18} /> Додаткові інструменти
+          </button>
           <LockKeyhole size={17} />
           <p>Приватно на вашому пристрої</p>
           <Link
+            prefetch={false}
             href="/assets"
             className="inline-link"
             style={{ marginTop: 18 }}
@@ -87,12 +95,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </div>
           <div>
-            <span>
-              {new Date(
-                state.currentPeriod + "-01T12:00:00",
-              ).toLocaleDateString("uk-UA", { month: "long", year: "numeric" })}
-            </span>
-            <Badge kind="green">{saved ? "Збережено" : "Зберігаємо…"}</Badge>
+            <span>Без реєстрації</span>
+            <Badge kind="green">
+              {!ready ? "На пристрої" : saved ? "Збережено" : "Зберігаємо…"}
+            </Badge>
           </div>
         </div>
         {error && (
@@ -100,35 +106,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {error}
           </div>
         )}
-        {children}
+        <div key={state.decision.resumeId ?? "new"} className="app-content">
+          {ready ? (
+            children
+          ) : (
+            <section
+              className="decision-loading"
+              aria-busy="true"
+              aria-label="Відкриваємо ваш фінансовий простір"
+            >
+              <span className="skeleton-line" />
+              <span className="skeleton-title" />
+              <span className="skeleton-line" />
+              <div className="skeleton-form" />
+              <p role="status">Відкриваємо ваш простір…</p>
+            </section>
+          )}
+        </div>
       </main>
       <nav className="mobile-nav" aria-label="Основна навігація">
-        {nav
-          .filter(([slug]) =>
-            ["", "budget", "goals", "portfolio"].includes(slug),
-          )
-          .map(([slug, label, Icon]) => {
-            const href = `/app${slug ? "/" + slug : ""}`;
-            return (
-              <Link
-                key={slug}
-                href={href}
-                className={path === href ? "active" : ""}
-                aria-current={path === href ? "page" : undefined}
-              >
-                <Icon size={21} />
-                <span>{label}</span>
-              </Link>
-            );
-          })}
+        {nav.map(([slug, label, Icon]) => {
+          const href = `/app${slug ? "/" + slug : ""}`;
+          return (
+            <Link
+              prefetch={false}
+              key={slug}
+              href={href}
+              className={path === href ? "active" : ""}
+              aria-current={path === href ? "page" : undefined}
+            >
+              <Icon size={21} />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
         <button
           className={
-            nav
-              .slice(2)
-              .filter(([slug]) => !["goals", "portfolio"].includes(slug))
-              .some(([slug]) => path === `/app/${slug}`)
-              ? "active"
-              : ""
+            extraNav.some(([slug]) => path === `/app/${slug}`) ? "active" : ""
           }
           onClick={() => menu.current?.showModal()}
           aria-haspopup="dialog"
@@ -159,25 +173,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
         <nav aria-label="Додаткові розділи">
-          {nav
-            .filter(([slug]) =>
-              ["reserve", "capital", "history", "settings"].includes(slug),
-            )
-            .map(([slug, label, Icon]) => (
-              <Link
-                key={slug}
-                href={`/app/${slug}`}
-                aria-current={path === `/app/${slug}` ? "page" : undefined}
-                onClick={() => menu.current?.close()}
-              >
-                <span className="menu-icon">
-                  <Icon size={23} />
-                </span>
-                <span>{label}</span>
-                <ArrowUpRight size={18} />
-              </Link>
-            ))}
-          <Link href="/assets" onClick={() => menu.current?.close()}>
+          {extraNav.map(([slug, label, Icon]) => (
+            <Link
+              prefetch={false}
+              key={slug}
+              href={`/app/${slug}`}
+              aria-current={path === `/app/${slug}` ? "page" : undefined}
+              onClick={() => menu.current?.close()}
+            >
+              <span className="menu-icon">
+                <Icon size={23} />
+              </span>
+              <span>{label}</span>
+              <ArrowUpRight size={18} />
+            </Link>
+          ))}
+          <Link
+            prefetch={false}
+            href="/assets"
+            onClick={() => menu.current?.close()}
+          >
             <span className="menu-icon">
               <ChartNoAxesCombined size={23} />
             </span>

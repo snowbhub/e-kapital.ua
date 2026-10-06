@@ -23,25 +23,25 @@ export default function Home() {
           <div>
             <div className="eyebrow">
               <i />
-              НАВІГАТОР ОСОБИСТОГО КАПІТАЛУ
+              ВІД ЗАОЩАДЖЕНЬ ДО ВЛАСНОГО РІШЕННЯ
             </div>
             <h1>
-              Ваші гроші.
+              Зрозумійте,
               <br />
-              Зрозуміла картина.
+              що можуть дати
               <br />
-              <em>Власні рішення.</em>
+              <em>ваші гроші.</em>
             </h1>
             <p>
-              Від щоденного бюджету до власної квартири. Плануйте, порівнюйте та
-              бачте, як працює ваш капітал.
+              ОВДП, Inzhur, депозит чи власне житло? Порівняйте варіанти для
+              своєї суми, зрозумійте умови й збережіть наступний крок.
             </p>
             <div className="hero-actions">
               <Link className="button" href="/app">
-                Відкрити мій єКапітал <ArrowUpRight size={17} />
+                Порівняти мої варіанти <ArrowUpRight size={17} />
               </Link>
-              <Link href="/assets" className="inline-link">
-                Дослідити активи <ArrowRight size={15} />
+              <Link href="/app/home" className="inline-link">
+                Накопичувати чи купувати житло? <ArrowRight size={15} />
               </Link>
             </div>
             <div className="hero-foot">
@@ -54,18 +54,18 @@ export default function Home() {
             aria-label="Можливості особистого кабінету"
           >
             <div className="visual-top">
-              <strong>Мій фінансовий простір</strong>
-              <span>Ваш план ↗</span>
+              <strong>Від питання до плану</strong>
+              <span>Ваше рішення ↗</span>
             </div>
             <div className="visual-main">
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <h3>Кожна гривня має призначення</h3>
+                <h3>Одна сума. Різні можливості.</h3>
                 <ChartNoAxesCombined size={18} />
               </div>
               <div className="visual-amount">
-                Бачити. Планувати.
+                Порівняти. Зрозуміти.
                 <br />
-                Рухатися до свого.
+                Вирішити для себе.
               </div>
               <div className="visual-grid" aria-hidden="true">
                 <span />
@@ -82,27 +82,27 @@ export default function Home() {
                   fontSize: 9,
                 }}
               >
-                <span>Резерв</span>
-                <span>Цілі</span>
-                <span>Інвестиції</span>
-                <span>Вільні гроші</span>
+                <span>ОВДП</span>
+                <span>Inzhur</span>
+                <span>Депозит</span>
+                <span>Валюта</span>
               </div>
             </div>
             <div className="visual-bottom">
               <div className="visual-mini">
                 <Shield size={19} />
-                <strong>Запас спокою</strong>
-                <p>Резерв на ваші витрати</p>
+                <strong>Знати різницю</strong>
+                <p>Виплати, строки та ризики</p>
               </div>
               <div className="visual-mini">
                 <Target size={19} />
-                <strong>Велика мета</strong>
-                <p>Власне житло та більше</p>
+                <strong>Свій наступний крок</strong>
+                <p>Інвестиції чи власне житло</p>
               </div>
             </div>
             <div className="visual-caption">
               <Check size={12} />
-              Свої цифри ви додаєте самі. Починайте з реальності.
+              Три відповіді для початку. Деталі — коли вони потрібні.
             </div>
           </div>
         </section>
@@ -137,31 +137,31 @@ export default function Home() {
           <div className="section-heading">
             <div>
               <div className="eyebrow">ПОЧИНАЄМО З ВАШОГО ЖИТТЯ</div>
-              <h2>Капітал — це більше, ніж інвестиції.</h2>
+              <h2>Прийшли з питанням. Вийшли з планом.</h2>
             </div>
             <p>
-              Спочатку зрозумійте, що вже є. Потім визначте, що потрібно. І
-              порівняйте власні варіанти.
+              Почніть із суми, поповнення та терміну. Не потрібно вести кожну
+              витрату, щоб зрозуміти свої можливості.
             </p>
           </div>
           <div className="path-grid">
             {[
               [
                 "01",
-                "Зрозумійте свій місяць",
-                "Доходи, реальні витрати та вільний cash flow. Розподіл визначаєте тільки ви.",
+                "Куди спрямувати заощадження?",
+                "Порівняйте суму на виході, виплати, строк та доступ до грошей. Умови й припущення видно поруч.",
                 ChartNoAxesCombined,
               ],
               [
                 "02",
-                "Створіть запас і цілі",
-                "Резерв, перший внесок на квартиру, авто чи бізнес. Сума, внесок і дата.",
+                "Накопичувати чи купувати житло?",
+                "Оренда, перший внесок, кредит і вкладення залишку. Два шляхи з однаковим капіталом і бюджетом.",
                 Shield,
               ],
               [
                 "03",
-                "Порівняйте сценарії",
-                "Власний портфель, історичні факти та купівельна спроможність після інфляції.",
+                "Що перевірити перед рішенням?",
+                "Збережіть свої суми, припущення й наступний крок. Поверніться до плану, коли умови зміняться.",
                 Target,
               ],
             ].map(([step, title, text, Icon]) => {

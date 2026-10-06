@@ -34,7 +34,7 @@ test("public calculator money labels survive hydration unchanged", async ({
   }
 });
 async function onboard(page: Page, base = "") {
-  await page.goto(base + "/app");
+  await page.goto(base + "/app/setup");
   await page.getByLabel("Місячний дохід після податків").fill("65000");
   await page.getByLabel("Обов’язкові витрати на місяць").fill("43000");
   await page.getByRole("button", { name: "Продовжити" }).click();
@@ -46,6 +46,23 @@ async function onboard(page: Page, base = "") {
     page.getByRole("heading", { name: "Мій капітал", exact: true }),
   ).toBeVisible();
   await expect(page.getByText("Збережено", { exact: true })).toBeVisible();
+}
+async function navigate(page: Page, name: string) {
+  const link = page.getByRole("link", { name, exact: true });
+  if (!(await link.isVisible())) {
+    const mobile = page.getByRole("button", { name: "Меню", exact: true });
+    await (
+      (await mobile.isVisible())
+        ? mobile
+        : page.getByRole("button", {
+            name: "Додаткові інструменти",
+            exact: true,
+          })
+    ).click();
+  }
+  const href = await link.getAttribute("href");
+  await link.click();
+  if (href) await page.waitForURL((url) => url.pathname === href);
 }
 test("first launch, cash flow, goal, allocation, saved scenario and reopen", async ({
   page,
@@ -59,11 +76,11 @@ test("first launch, cash flow, goal, allocation, saved scenario and reopen", asy
   });
   await onboard(page);
   await expect(page.locator(".stat-accent").getByText(/120/)).toBeVisible();
-  await page.getByRole("link", { name: "Бюджет", exact: true }).click();
+  await navigate(page, "Бюджет");
   await expect(page.getByLabel("Сума Основний дохід")).toHaveValue("65000");
   await page.getByLabel("Інвестиційний капітал", { exact: true }).fill("30");
   await expect(page.getByText("Разом 100%", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Мої цілі", exact: true }).click();
+  await navigate(page, "Мої цілі");
   await page
     .getByRole("button", { name: "Створити ціль", exact: true })
     .click();
@@ -75,7 +92,7 @@ test("first launch, cash flow, goal, allocation, saved scenario and reopen", asy
   await expect(
     page.getByRole("heading", { name: "Моя квартира" }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Портфель", exact: true }).click();
+  await navigate(page, "Портфель");
   await page.getByLabel("Відсоток Долар США", { exact: true }).fill("20");
   await page.getByRole("button", { name: "Зафіксувати Долар США" }).click();
   await page.getByLabel("Відсоток Золото", { exact: true }).fill("30");
@@ -103,7 +120,7 @@ test("first launch, cash flow, goal, allocation, saved scenario and reopen", asy
   await expect(
     page.getByLabel("USD: зміна гривневого еквівалента", { exact: true }),
   ).toHaveValue("5");
-  await page.getByRole("link", { name: "Мої цілі", exact: true }).click();
+  await navigate(page, "Мої цілі");
   await expect(
     page.getByRole("heading", { name: "Моя квартира" }),
   ).toBeVisible();
@@ -140,7 +157,7 @@ test("monthly rollover preserves history and asks before copy", async ({
   });
   await page.reload();
   await expect(page.getByText(/Почався новий місяць/)).toBeVisible();
-  await page.getByRole("link", { name: "Бюджет", exact: true }).click();
+  await navigate(page, "Бюджет");
   await expect(page.getByLabel("Сума Основний дохід")).toHaveCount(0);
   await page.getByRole("button", { name: "Скопіювати", exact: true }).click();
   await expect(page.getByLabel("Сума Основний дохід")).toHaveValue("65000");
@@ -175,9 +192,7 @@ test("encrypted backup downloads no plaintext and user data deletes only after c
   page,
 }) => {
   await onboard(page);
-  if (await page.getByRole("button", { name: "Меню", exact: true }).isVisible())
-    await page.getByRole("button", { name: "Меню", exact: true }).click();
-  await page.getByRole("link", { name: "Налаштування", exact: true }).click();
+  await navigate(page, "Налаштування");
   await page
     .getByLabel("Пароль backup (щонайменше 10 символів)")
     .fill("testing-safe-password");
@@ -207,7 +222,9 @@ test("encrypted backup downloads no plaintext and user data deletes only after c
   await page
     .getByRole("button", { name: "Остаточно видалити", exact: true })
     .click();
-  await expect(page.getByLabel("Місячний дохід після податків")).toBeVisible();
+  await expect(page.getByLabel("Сума для рішення (без резерву)")).toHaveValue(
+    "0",
+  );
 });
 test("manifest, sources, privacy, sitemap, JSON-LD and provider disclosures", async ({
   page,
@@ -270,6 +287,12 @@ test("all public and app routes respond without horizontal page overflow", async
   ]) {
     await page.goto("/app/" + path);
     await expect(page.locator(".page-title h1")).toBeVisible();
+    const overflow = await page.evaluate(() =>
+      [...document.querySelectorAll("main *")]
+        .filter((el) => el.getBoundingClientRect().right > innerWidth + 1)
+        .map((el) => ({ tag: el.tagName, class: el.className, right: el.getBoundingClientRect().right, text: el.textContent?.slice(0, 100) })),
+    );
+    if (overflow.length) console.log("Overflow diagnostics", path, overflow);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth + 1,
@@ -328,6 +351,9 @@ test("offline app shell retains IndexedDB state", async ({
     : "";
   try {
     await onboard(page, origin);
+    await page.goto(origin + "/app");
+    await page.getByLabel("Сума для рішення (без резерву)").fill("120000");
+    await expect(page.getByText("Збережено", { exact: true })).toBeVisible();
     await page.evaluate(() =>
       navigator.serviceWorker.ready.then(() => undefined),
     );
@@ -348,9 +374,11 @@ test("offline app shell retains IndexedDB state", async ({
     const response = await page.reload();
     expect(response?.fromServiceWorker()).toBe(true);
     await expect(
-      page.getByRole("heading", { name: "Мій капітал", exact: true }),
+      page.getByRole("heading", { name: "Що можуть дати ваші гроші?" }),
     ).toBeVisible();
-    await expect(page.locator(".stat-accent").getByText(/120/)).toBeVisible();
+    await expect(page.getByLabel("Сума для рішення (без резерву)")).toHaveValue(
+      "120000",
+    );
   } finally {
     if (proxy) {
       proxy.closeAllConnections();
@@ -388,7 +416,7 @@ test("market payload stays small and historical series loads only on demand", as
 test("amount editing, formatted summary and responsive app menu", async ({
   page,
 }) => {
-  await page.goto("/app");
+  await page.goto("/app/setup");
   const income = page.getByLabel("Місячний дохід після податків");
   await income.focus();
   await expect(income).toHaveValue("");
@@ -419,7 +447,8 @@ test("amount editing, formatted summary and responsive app menu", async ({
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(menu).toBeFocused();
   await menu.click();
-  await page.getByRole("link", { name: "Капітал", exact: true }).click();
+  await page.getByRole("button", { name: "Закрити меню" }).click();
+  await navigate(page, "Мої активи");
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(page.getByLabel("Вартість Поточний капітал")).toBeVisible();
   expect(
@@ -427,7 +456,7 @@ test("amount editing, formatted summary and responsive app menu", async ({
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  await page.getByRole("link", { name: "Бюджет", exact: true }).click();
+  await navigate(page, "Бюджет");
   await expect(page.getByLabel("Сума Основний дохід")).toHaveValue("65000.5");
   await page.getByRole("button", { name: "Додати дохід", exact: true }).click();
   const amount = page.getByLabel("Сума Зарплата", { exact: true });
@@ -463,4 +492,120 @@ test("numeric drafts respect bounds and whole-number terms", async ({
   await expect(sum).toHaveAttribute("aria-invalid", "true");
   await sum.fill("50000,25");
   await expect(sum).toHaveAttribute("aria-invalid", "false");
+});
+
+test("three inputs lead to an investment decision, saved assumptions and a next step", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/app");
+  await expect(
+    page.getByRole("heading", { name: "Що можуть дати ваші гроші?" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Місячний дохід після податків")).toHaveCount(0);
+  await expect(page.locator(".decision-start input:visible")).toHaveCount(3);
+  await page.getByLabel("Сума для рішення (без резерву)").fill("100000");
+  await page.getByLabel("Можу додавати щомісяця").fill("5000");
+  await page.getByLabel("На скільки місяців?").fill("12");
+  const card = page.locator(".comparison-card").filter({
+    has: page.getByRole("heading", { name: "Депозит", exact: true }),
+  });
+  await card.locator("summary").click();
+  await page
+    .getByLabel("Депозит: грошові виплати на рік", { exact: true })
+    .fill("15");
+  await page
+    .getByLabel("Депозит: податок із виплат", { exact: true })
+    .fill("23");
+  await card.getByRole("button", { name: "Розібрати цей варіант" }).click();
+  await page
+    .getByLabel("Мій наступний крок", { exact: true })
+    .fill("Перевірити договір і дострокове повернення");
+  await page
+    .getByRole("button", { name: "Зберегти мій план", exact: true })
+    .click();
+  await expect(
+    page.getByText("План збережено на цьому пристрої.", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("Збережено", { exact: true })).toBeVisible();
+  await navigate(page, "Мої плани");
+  await expect(
+    page.getByText("Перевірити договір і дострокове повернення", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Мої плани", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Порахувати знову" }).click();
+  await expect(page.getByLabel("Сума для рішення (без резерву)")).toHaveValue(
+    "100000",
+  );
+  await card.locator("summary").click();
+  await expect(
+    page.getByLabel("Депозит: грошові виплати на рік", { exact: true }),
+  ).toHaveValue("15");
+  await expect(
+    page.getByLabel("Депозит: податок із виплат", { exact: true }),
+  ).toHaveValue("23");
+  await page.setViewportSize({ width: 320, height: 640 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: `test-results/decision-${test.info().project.name}.png`,
+    fullPage: true,
+  });
+  expect(errors).toEqual([]);
+});
+
+test("housing compares equal budgets and exposes gaps before saving a plan", async ({
+  page,
+}) => {
+  await page.goto("/app/home");
+  await page.getByLabel("Мої гроші на житло (без резерву)").fill("100000");
+  await page.getByLabel("Можу відкладати крім оренди").fill("10000");
+  await page.getByLabel("Вартість бажаного житла").fill("3000000");
+  await page.getByLabel("Моя оренда на місяць").fill("15000");
+  await expect(page.locator(".housing-verdict")).toContainText(/500\s000/);
+  await expect(page.locator(".housing-paths")).toContainText("Недоступно");
+  await page.getByLabel("Мої гроші на житло (без резерву)").fill("1000000");
+  await expect(page.locator(".housing-paths")).not.toContainText("Недоступно");
+  await page.getByLabel("Чиста дохідність грошових виплат").fill("12");
+  await expect(page.locator(".coverage-card .metric").first()).toContainText(
+    /4\s000/,
+  );
+  await page
+    .getByLabel("Перевірити без інвестиційного доходу та виплат")
+    .check();
+  await expect(page.locator(".coverage-card .metric").first()).toContainText(
+    "0",
+  );
+  await page
+    .getByRole("button", { name: "Перевірити іпотеку з банком", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Зберегти план житла" }).click();
+  await expect(page.getByText("Збережено", { exact: true })).toBeVisible();
+  await navigate(page, "Мої плани");
+  await page.getByRole("link", { name: "Порахувати знову" }).click();
+  await expect(page.getByLabel("Вартість бажаного житла")).toHaveValue(
+    "3000000",
+  );
+  await expect(page.getByLabel("Чиста дохідність грошових виплат")).toHaveValue(
+    "12",
+  );
+  await page.setViewportSize({ width: 320, height: 640 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: `test-results/housing-${test.info().project.name}.png`,
+    fullPage: true,
+  });
 });
