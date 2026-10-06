@@ -13,8 +13,20 @@ import {
   refreshBanks,
 } from "../../src/lib/data/bank-providers";
 import { decisionInputsSchema } from "../../src/lib/storage/decision";
+import bankSnapshot from "../../data/banks.json";
+import { marketSchema } from "../../src/lib/data/schema";
 const date = "2026-10-06";
-const market = getSnapshot();
+const snapshot = getSnapshot();
+// Fixed historical fixture; scheduled live-market updates must not move test dates.
+const market = marketSchema.parse({
+  ...snapshot,
+  ...bankSnapshot,
+  cpi: Array.from({ length: 12 }, (_, i) => ({
+    date: new Date(Date.UTC(2025, 8 + i, 1)).toISOString().slice(0, 10),
+    value: 100.5,
+    meta: snapshot.cpi[0].meta,
+  })),
+});
 const input = {
   capital: 100000,
   monthly: 0,
@@ -114,6 +126,10 @@ describe("automatic financial decisions", () => {
   });
   it("uses a consecutive historical CPI series, never a missing-data zero", () => {
     expect(recentInflation(market, date)?.rate).toBeGreaterThan(0);
+    expect(recentInflation(market, date)?.rate).toBeCloseTo(
+      (1.005 ** 12 - 1) * 100,
+      8,
+    );
     expect(recentInflation({ ...market, cpi: [] }, date)).toBeNull();
     expect(recentInflation(market, "2027-02-01")).toBeNull();
     expect(

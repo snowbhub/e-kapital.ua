@@ -5,6 +5,7 @@ import {
   emptyMarket,
 } from "../src/lib/data/schema";
 import { syncMarket } from "../src/lib/data/sync";
+import { applyBankSeed } from "../src/lib/data/market";
 let previous = emptyMarket;
 try {
   previous = parseStoredMarket(
@@ -13,7 +14,7 @@ try {
 } catch (e) {
   if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
 }
-const next = await syncMarket(previous);
+const next = await syncMarket(applyBankSeed(previous));
 await mkdir("data", { recursive: true });
 await writeFile(
   "data/market.json",

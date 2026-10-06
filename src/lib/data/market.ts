@@ -4,8 +4,13 @@ import { parseStoredMarket, marketSchema, type Market } from "./schema";
 import { applyNbuRefresh, refreshNbuRates } from "./nbu-refresh";
 import { unstable_cache } from "next/cache";
 import { refreshBanks } from "./bank-providers";
-export function getSnapshot({ history = false } = {}): Market {
-  const market = parseStoredMarket(snapshot);
+export function applyBankSeed(previous: Market): Market {
+  const market = {
+    ...previous,
+    deposits: [...previous.deposits],
+    fxQuotes: [...previous.fxQuotes],
+    health: [...previous.health],
+  };
   const banks = marketSchema
     .pick({ deposits: true, fxQuotes: true, health: true })
     .parse(bankSnapshot);
@@ -32,6 +37,10 @@ export function getSnapshot({ history = false } = {}): Market {
     if (!current || (current.lastAttempt ?? "") < (h.lastAttempt ?? ""))
       market.health = [...market.health.filter((x) => x.id !== h.id), h];
   }
+  return market;
+}
+export function getSnapshot({ history = false } = {}): Market {
+  const market = applyBankSeed(parseStoredMarket(snapshot));
   if (!history) market.history = {};
   return market;
 }
