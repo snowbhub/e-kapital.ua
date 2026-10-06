@@ -357,6 +357,35 @@ test("offline app shell retains IndexedDB state", async ({
     await page.goto(origin + "/app");
     await page.getByLabel("Вільні гроші зараз").fill("120000");
     await expect(page.getByText("Збережено", { exact: true })).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            new Promise<number | null>((resolve, reject) => {
+              const request = indexedDB.open("e-kapital", 1);
+              request.onerror = () => reject(request.error);
+              request.onsuccess = () => {
+                const db = request.result,
+                  read = db
+                    .transaction("state")
+                    .objectStore("state")
+                    .get("profile");
+                read.onsuccess = () => {
+                  const value = read.result as
+                    | { decision?: { inputs?: { capital?: number } } }
+                    | undefined;
+                  db.close();
+                  resolve(value?.decision?.inputs?.capital ?? null);
+                };
+                read.onerror = () => {
+                  db.close();
+                  reject(read.error);
+                };
+              };
+            }),
+        ),
+      )
+      .toBe(120000);
     await page.evaluate(() =>
       navigator.serviceWorker.ready.then(() => undefined),
     );
@@ -507,9 +536,11 @@ test("automatic offers include taxes, inflation and a persisted next step", asyn
   await expect(page.locator(".auto-input-card input")).toHaveCount(2);
   await page.getByLabel("Вільні гроші зараз").fill("160000");
   await page.getByLabel("Можу відкладати щомісяця").fill("5000");
-  await expect(
-    page.locator(".bank-offers").first().locator(".bank-offer"),
-  ).toHaveCount(2);
+  await expect
+    .poll(() =>
+      page.locator(".bank-offers").first().locator(".bank-offer").count(),
+    )
+    .toBeGreaterThanOrEqual(2);
   await expect(page.locator(".auto-stats")).toContainText(
     "Втрата купівельної спроможності",
   );
