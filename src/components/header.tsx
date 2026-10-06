@@ -17,11 +17,11 @@ export function Header() {
         <Logo />
         <nav aria-label="Головна навігація">
           <Link href="/assets">Активи</Link>
-          <Link href="/eoselia">Житло</Link>
+          <Link href="/app/home">Житло</Link>
           <Link href="/finansova-gramotnist">Знання</Link>
         </nav>
         <Link href="/app" className="button small">
-          Мій єКапітал <ArrowUpRight size={16} />
+          Порівняти варіанти <ArrowUpRight size={16} />
         </Link>
       </div>
     </header>
@@ -33,7 +33,7 @@ export function Footer() {
       <div>
         <Logo />
         <p>
-          Навігатор особистого капіталу.
+          Зрозумійте, що можуть дати ваші гроші.
           <br />
           Ваші гроші. Ваші рішення.
         </p>

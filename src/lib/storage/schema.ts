@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { assets, type AssetId } from "../finance/assets";
+import { decisionSchema } from "./decision";
 const assetId = z.enum(assets.map((a) => a.id) as [AssetId, ...AssetId[]]);
 export const currencySchema = z.enum(["UAH", "USD", "EUR"]);
 const amount = z.number().finite().min(0).max(1e12);
@@ -55,6 +56,7 @@ const scenario = z.object({
 export const stateSchema = z.object({
   version: z.literal(1),
   onboarded: z.boolean(),
+  decision: decisionSchema,
   currentPeriod: period,
   periods: z
     .array(
@@ -198,6 +200,11 @@ export function initialState(): State {
   return {
     version: 1,
     onboarded: false,
+    decision: {
+      resumeId: null,
+      inputs: { capital: 0, monthly: 0, months: 12, purpose: "grow" },
+      plans: [],
+    },
     currentPeriod: monthKey(),
     periods: [blankPeriod()],
     reserve: {

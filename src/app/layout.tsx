@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./decision.css";
 import { Pwa } from "@/components/pwa";
 import { siteUrl } from "@/lib/site";
 export const metadata: Metadata = {

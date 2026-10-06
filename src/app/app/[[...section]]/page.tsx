@@ -7,7 +7,14 @@ import { Portfolio } from "@/components/portfolio";
 import { Capital } from "@/components/capital";
 import { HistoryView } from "@/components/history";
 import { SettingsView } from "@/components/settings";
+import { DecisionWorkspace } from "@/components/decision-workspace";
+import { HousingDecision } from "@/components/housing-decision";
+import { DecisionPlans } from "@/components/decision-plans";
 const pages = {
+  home: HousingDecision,
+  plan: DecisionPlans,
+  overview: Dashboard,
+  setup: Dashboard,
   budget: Budget,
   reserve: Reserve,
   goals: Goals,
@@ -22,7 +29,7 @@ export default async function Page({
   params: Promise<{ section?: string[] }>;
 }) {
   const { section } = await params;
-  if (!section?.length) return <Dashboard />;
+  if (!section?.length) return <DecisionWorkspace />;
   if (section.length !== 1 || !(section[0] in pages)) notFound();
   const Component = pages[section[0] as keyof typeof pages];
   return <Component />;

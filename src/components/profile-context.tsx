@@ -8,9 +8,15 @@ import { monthlyAmount, sum, cashFlow } from "@/lib/finance/calculations";
 import type { Line } from "@/lib/storage/schema";
 type Profile = ReturnType<typeof useProfile> & { market: Market };
 const context = createContext<Profile | null>(null);
-export function ProfileProvider({ children }: { children: React.ReactNode }) {
+export function ProfileProvider({
+  children,
+  initialMarket = emptyMarket,
+}: {
+  children: React.ReactNode;
+  initialMarket?: Market;
+}) {
   const profile = useProfile();
-  const [market, setMarket] = useState<Market>(emptyMarket);
+  const [market, setMarket] = useState<Market>(initialMarket);
   useEffect(() => {
     fetch("/api/market")
       .then((r) => (r.ok ? r.json() : null))
