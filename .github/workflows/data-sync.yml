@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - "src/lib/data/**"
+      - "package.json"
+      - "package-lock.json"
       - "scripts/ingest.ts"
       - ".github/workflows/data-sync.yml"
   schedule:

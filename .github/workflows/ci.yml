@@ -28,3 +28,58 @@ jobs:
           name: playwright-results
           path: test-results/
           retention-days: 7
+  production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TEST_BASE_URL: https://e-kapital-production.up.railway.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Wait for this commit on Railway
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          node --input-type=module <<'JS'
+          const deadline = Date.now() + 10 * 60 * 1000;
+          const verifiedSnapshots = new Set();
+          while (Date.now() < deadline) {
+            try {
+              const response = await fetch(`${process.env.TEST_BASE_URL}/api/health`, { signal: AbortSignal.timeout(10000) });
+              const health = await response.json();
+              if (response.ok && health.status === 'ok' && /^[a-f0-9]{40}$/.test(health.commit)) {
+                // Ingestion may publish a newer validated snapshot during this build.
+                if (health.commit !== process.env.EXPECTED_COMMIT && !verifiedSnapshots.has(health.commit)) {
+                  const url = `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/compare/${process.env.EXPECTED_COMMIT}...${health.commit}`;
+                  const comparisonResponse = await fetch(url, { signal: AbortSignal.timeout(10000) });
+                  const comparison = await comparisonResponse.json();
+                  if (comparisonResponse.ok && comparison.status === 'ahead' && comparison.files?.length === 1 && comparison.files[0].filename === 'data/market.json')
+                    verifiedSnapshots.add(health.commit);
+                }
+                if (health.commit !== process.env.EXPECTED_COMMIT && !verifiedSnapshots.has(health.commit)) {
+                  await new Promise(resolve => setTimeout(resolve, 10000));
+                  continue;
+                }
+                console.log(`Railway is serving ${health.commit}`);
+                process.exit(0);
+              }
+            } catch (error) { console.log(error.message); }
+            await new Promise(resolve => setTimeout(resolve, 10000));
+          }
+          throw new Error('Railway did not publish the expected commit');
+          JS
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify live desktop and iPhone flows
+        run: npm run test:e2e -- --project=chromium --project=iphone-safari
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: production-playwright-results
+          path: test-results/
+          retention-days: 7
