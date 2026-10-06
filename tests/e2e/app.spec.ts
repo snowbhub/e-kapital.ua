@@ -2,6 +2,37 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { readFile } from "node:fs/promises";
 import { test, expect, type Page } from "@playwright/test";
+test("public calculator money labels survive hydration unchanged", async ({
+  browser,
+  page,
+  baseURL,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const serverPage = await context.newPage();
+  try {
+    for (const path of [
+      "/deposit-calculator",
+      "/eoselia",
+      "/inzhur-calculator",
+    ]) {
+      await serverPage.goto(new URL(path, baseURL!).href);
+      const serverMetrics = await serverPage
+        .locator(".metric")
+        .allTextContents();
+      expect(serverMetrics.length).toBeGreaterThan(0);
+      await page.goto(path);
+      await expect(page.locator(".metric")).toHaveText(serverMetrics);
+      await expect(
+        page.locator(".metric").filter({ hasText: "₴" }).first(),
+      ).toBeVisible();
+    }
+    expect(errors).toEqual([]);
+  } finally {
+    await context.close();
+  }
+});
 async function onboard(page: Page, base = "") {
   await page.goto(base + "/app");
   await page.getByLabel("Місячний дохід після податків").fill("65000");

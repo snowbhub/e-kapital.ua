@@ -1,9 +1,9 @@
 import { marketSchema, emptyMarket, type Market } from "./schema";
 import { parseFundNav, parseFundDistributions } from "./fund-workbook";
+import { fetchNbuRates } from "./nbu-refresh";
 import {
   sources,
   fetchOfficial,
-  parseNbu,
   parseNbuHistory,
   parseMilitary,
   parseDepository,
@@ -27,9 +27,7 @@ export async function syncMarket(
       sources.nbu,
       "Щоденно",
       async () => {
-        next.rates = parseNbu(JSON.parse(await fetchOfficial(sources.nbu)));
-        if (next.rates.length !== 4)
-          throw new Error("Неповний набір USD/EUR/XAU/XAG");
+        next.rates = await fetchNbuRates();
         return next.rates.length;
       },
     ],

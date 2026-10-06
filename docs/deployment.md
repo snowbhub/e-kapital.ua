@@ -27,4 +27,6 @@ GitHub workflow `Quality gate` додає E2E у Chrome, Firefox, WebKit та mo
 
 Зміни `main` запускають Railway auto-deploy. Перевіряти commit SHA й status SUCCESS, `/api/health`, `/api/market`, sitemap host та головну сторінку. Якщо джерело даних недоступне, додатково дивитися `/data-sources`.
 
+`/api/health` повертає `commit` із Railway `RAILWAY_GIT_COMMIT_SHA` (локально `null`). Після quality checks GitHub Action на `main` чекає цей commit на публічному домені та перевіряє live flows у desktop Chromium й iPhone WebKit. Перевірки створюють тимчасові профілі тільки в браузерах runner; особисті дані користувачів не читаються і не змінюються.
+
 Rollback у Railway повертає попередній deployment; особисті IndexedDB-дані користувача залишаються на його пристрої. Перед несумісною зміною State потрібна міграція версії та перевірка старих backup.
