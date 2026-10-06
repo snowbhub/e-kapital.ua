@@ -3,6 +3,7 @@ import { createContext, useContext } from "react";
 import { useProfile } from "@/lib/storage/use-profile";
 import type { Market } from "@/lib/data/schema";
 import { emptyMarket } from "@/lib/data/schema";
+import { acceptMarketResponse } from "@/lib/data/client-market";
 import { useEffect, useState } from "react";
 import { monthlyAmount, sum, cashFlow } from "@/lib/finance/calculations";
 import type { Line } from "@/lib/storage/schema";
@@ -18,10 +19,10 @@ export function ProfileProvider({
   const profile = useProfile();
   const [market, setMarket] = useState<Market>(initialMarket);
   useEffect(() => {
-    fetch("/api/market")
+    fetch("/api/market?v=bank-offers-v1", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((v) => {
-        if (v) setMarket(v);
+        if (v) setMarket((previous) => acceptMarketResponse(previous, v));
       })
       .catch(() => {});
   }, []);

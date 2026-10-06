@@ -567,6 +567,30 @@ test("automatic offers include taxes, inflation and a persisted next step", asyn
   expect(errors).toEqual([]);
 });
 
+test("old cached market payload remains compatible with the new dashboard", async ({
+  page,
+  request,
+}) => {
+  const response = await request.get("/api/market");
+  const old = await response.json();
+  delete old.deposits;
+  delete old.fxQuotes;
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.route("**/api/market*", (route) =>
+    route.fulfill({ status: 200, json: old }),
+  );
+  await page.goto("/app");
+  await page.getByLabel("Вільні гроші зараз").fill("100000");
+  await expect(
+    page.locator(".bank-offers").first().locator(".bank-offer").first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Що робити з моїми грошима?" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("three inputs lead to an investment decision, saved assumptions and a next step", async ({
   page,
 }) => {
