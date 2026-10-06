@@ -1,5 +1,5 @@
 "use client";
-import { type ReactNode, useId, useSyncExternalStore } from "react";
+import { type ReactNode, useId, useState, useSyncExternalStore } from "react";
 import { ArrowUpRight, Info } from "lucide-react";
 import { fmt } from "@/lib/format";
 const subscribe = () => () => {};
@@ -28,29 +28,59 @@ export function Field({
 }) {
   const id = useId();
   const interactive = useInteractive();
+  const [draft, setDraft] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const isMoney = suffix === "₴" || suffix === "USD" || suffix === "EUR";
+  // Keep the raw model value visible after blur. Formatting belongs to summaries;
+  // an editable field must remain easy to select, replace and test.
+  const displayed = String(value);
   return (
-    <label className="field" htmlFor={id}>
+    <label className={`field ${isMoney ? "field-money" : ""}`} htmlFor={id}>
       <span>{label}</span>
       <div className="input-wrap">
         <input
           id={id}
           disabled={!interactive}
           aria-label={label}
-          type="number"
-          inputMode="decimal"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
+          type="text"
+          inputMode={step === 1 ? "numeric" : "decimal"}
+          autoComplete="off"
+          spellCheck={false}
+          aria-invalid={!!error}
+          aria-describedby={error || hint ? `${id}-hint` : undefined}
+          value={draft ?? displayed}
+          onFocus={() => setDraft(value === 0 ? "" : String(value))}
           onChange={(e) => {
-            const n = Number(e.target.value);
-            if (Number.isFinite(n) && n >= min && n <= max)
-              onChange(step === 1 ? Math.floor(n) : n);
+            const raw = e.target.value
+              .replace(/[\s\u00a0\u202f]/g, "")
+              .replace(",", ".");
+            if (!/^-?\d*\.?\d*$/.test(raw)) return;
+            const clean = raw.replace(/^(-?)0+(?=\d)/, "$1");
+            setDraft(clean);
+            const n = Number(clean);
+            const message =
+              clean === "-" || clean === "." || clean === "-."
+                ? "Допишіть суму"
+                : !Number.isFinite(n) || n < min || n > max
+                  ? `Введіть число від ${min} до ${max}`
+                  : step === 1 && !Number.isInteger(n)
+                    ? "Введіть ціле число"
+                    : "";
+            setError(message);
+            if (!message) onChange(n);
+          }}
+          onBlur={() => {
+            setDraft(null);
+            setError("");
           }}
         />
         {suffix && <small>{suffix}</small>}
       </div>
-      {hint && <small>{hint}</small>}
+      {(error || hint) && (
+        <small id={`${id}-hint`} className={error ? "field-error" : ""}>
+          {error || hint}
+        </small>
+      )}
     </label>
   );
 }

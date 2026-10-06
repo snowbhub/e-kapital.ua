@@ -1,6 +1,13 @@
 "use client";
 import Link from "next/link";
-import { ArrowUpRight, Plus, Shield, Target } from "lucide-react";
+import {
+  ArrowUpRight,
+  Plus,
+  Shield,
+  Target,
+  Wallet,
+  ChartNoAxesCombined,
+} from "lucide-react";
 import { useCapital, useNumbers } from "./profile-context";
 import { Card, Stat, Progress, Empty, Badge, Tip } from "./ui";
 import { fmt, pct, dateFmt } from "@/lib/format";
@@ -49,7 +56,7 @@ export function Dashboard() {
           </Link>
         </div>
       )}
-      <div className="stats">
+      <div className="stats dashboard-stats">
         <Stat
           label="Чистий капітал"
           value={net}
@@ -72,6 +79,25 @@ export function Dashboard() {
           foot="Після введених вами витрат"
         />
       </div>
+      <nav className="quick-actions" aria-label="Швидкі дії">
+        {[
+          ["budget", "Планувати місяць", Wallet],
+          ["reserve", "Моя подушка", Shield],
+          ["goals", "Нова ціль", Target],
+          ["portfolio", "Мої сценарії", ChartNoAxesCombined],
+        ].map(([slug, label, Icon]) => {
+          const I = Icon as typeof Wallet;
+          return (
+            <Link key={slug as string} href={`/app/${slug}`}>
+              <span>
+                <I size={22} />
+              </span>
+              <strong>{label as string}</strong>
+              <ArrowUpRight size={16} />
+            </Link>
+          );
+        })}
+      </nav>
       <div className="dashboard-grid">
         <Card>
           <div className="card-title">

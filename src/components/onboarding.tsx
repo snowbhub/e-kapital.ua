@@ -1,8 +1,15 @@
 "use client";
-import { useState } from "react";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { useRef, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ShieldCheck,
+  Wallet,
+  Shield,
+  Sparkles,
+} from "lucide-react";
 import { Logo } from "./header";
-import { Card, Field, Badge } from "./ui";
+import { Field } from "./ui";
 import { useCapital } from "./profile-context";
 import { fmt } from "@/lib/format";
 export function Onboarding() {
@@ -12,6 +19,14 @@ export function Onboarding() {
     [expenses, setExpenses] = useState(0),
     [reserve, setReserve] = useState(0),
     [capital, setCapital] = useState(0);
+  const title = useRef<HTMLHeadingElement>(null);
+  function move(next: number) {
+    setStep(next);
+    requestAnimationFrame(() => {
+      title.current?.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
   function finish() {
     update((s) => ({
       ...s,
@@ -81,99 +96,195 @@ export function Onboarding() {
       ),
     }));
   }
+  const StepIcon = [Wallet, Shield, Sparkles][step];
   return (
-    <main id="main" className="container onboarding">
-      <Logo />
-      <div className="onboarding-step">
-        {[0, 1, 2].map((i) => (
-          <span key={i} className={i <= step ? "active" : ""} />
-        ))}
-      </div>
-      <Badge kind="green">Знайомство · {step + 1} / 3</Badge>
-      <h1>
-        {
-          [
-            "Почнімо з вашої реальності.",
-            "Скільки вже є в запасі?",
-            "Тепер ви бачите картину.",
-          ][step]
-        }
-      </h1>
-      <p>
-        {
-          [
-            "Введіть свої місячні суми. Пізніше можна додати кілька доходів, різні валюти та детальні витрати.",
-            "Резерв — це гроші на непередбачені витрати. Поточний капітал нижче вкажіть окремо, без суми резерву.",
-            "Це основа вашого плану. Ви самі визначаєте, яку суму залишати вільною, відкладати на резерв, цілі чи інвестиції.",
-          ][step]
-        }
-      </p>
-      <Card>
-        {step === 0 ? (
-          <div className="form-grid two">
-            <Field
-              label="Місячний дохід після податків"
-              value={income}
-              onChange={setIncome}
-              suffix="₴"
-            />
-            <Field
-              label="Обов’язкові витрати на місяць"
-              value={expenses}
-              onChange={setExpenses}
-              suffix="₴"
-            />
+    <main id="main" className="onboarding-screen">
+      <header className="onboarding-header">
+        <Logo />
+        <span className="onboarding-private">
+          <ShieldCheck size={16} /> Особистий простір
+        </span>
+      </header>
+      <div className="onboarding-layout">
+        <aside className="onboarding-story">
+          <div className="eyebrow">ВАШ ФІНАНСОВИЙ ПРОСТІР</div>
+          <h2>
+            Плани великі.
+            <br />
+            Початок простий.
+          </h2>
+          <p>Кілька цифр сьогодні — чіткіша картина вашого завтра.</p>
+          <div className="capital-art" aria-hidden="true">
+            <div className="art-orbit" />
+            <div className="art-card">
+              <span>
+                єКапітал <Sparkles size={19} />
+              </span>
+              <div className="art-monogram">є</div>
+              <strong>
+                Ваші гроші.
+                <br />
+                Ваші можливості.
+              </strong>
+              <div className="art-chips">
+                <span>Резерв</span>
+                <span>Цілі</span>
+                <span>Капітал</span>
+              </div>
+            </div>
+            <div className="art-note">
+              <ShieldCheck size={22} />
+              <span>
+                Почніть із себе<strong>Власний план, у вашому темпі</strong>
+              </span>
+            </div>
           </div>
-        ) : step === 1 ? (
-          <div className="form-grid two">
-            <Field
-              label="Поточний фінансовий резерв"
-              value={reserve}
-              onChange={setReserve}
-              suffix="₴"
-            />
-            <Field
-              label="Інший поточний капітал (без резерву)"
-              value={capital}
-              onChange={setCapital}
-              suffix="₴"
-            />
+          <div className="story-footer">
+            <ShieldCheck size={17} /> Ваші фінансові дані залишаються на цьому
+            пристрої.
           </div>
-        ) : (
-          <>
-            <div className="eyebrow">ПІСЛЯ ВВЕДЕНИХ ВИТРАТ ЗАЛИШАЄТЬСЯ</div>
-            <h2 style={{ fontSize: 38 }}>
-              {fmt(income - expenses)} <small>/ місяць</small>
-            </h2>
-            <p className="muted" style={{ fontSize: 12, marginTop: 18 }}>
-              Резерв: {fmt(reserve)} · Інший капітал: {fmt(capital)}
-            </p>
-          </>
-        )}
-        <div className="form-actions">
-          {step > 0 && (
-            <button
-              className="button outline"
-              onClick={() => setStep(step - 1)}
-            >
-              Назад
-            </button>
-          )}
-          <button
-            className="button"
-            onClick={() => (step < 2 ? setStep(step + 1) : finish())}
+        </aside>
+        <section className="onboarding-panel">
+          <div
+            className="onboarding-progress"
+            aria-label={`Знайомство: крок ${step + 1} із 3`}
           >
-            {step === 2 ? "Відкрити мій єКапітал" : "Продовжити"}
-            <ArrowRight size={16} />
-          </button>
-        </div>
-      </Card>
-      <p
-        style={{ fontSize: 12, display: "flex", gap: 8, alignItems: "center" }}
-      >
-        <ShieldCheck size={16} />
-        Фінансові дані зберігаються у вашому браузері. Реєстрація не потрібна.
-      </p>
+            {["Ваш місяць", "Ваш запас", "Ваш план"].map((label, i) => (
+              <div key={label} className={i <= step ? "active" : ""}>
+                <span />
+                <small>{label}</small>
+              </div>
+            ))}
+          </div>
+          <div className="onboarding-copy">
+            <span className="step-icon">
+              <StepIcon size={24} />
+            </span>
+            <div className="step-caption">Знайомство · {step + 1} / 3</div>
+            <h1 ref={title} tabIndex={-1}>
+              {
+                [
+                  "Почнімо з вашої реальності.",
+                  "Скільки вже є в запасі?",
+                  "Тепер ви бачите картину.",
+                ][step]
+              }
+            </h1>
+            <p>
+              {
+                [
+                  "Дохід і необхідні витрати — основа вашого місяця. Деталі можна додати пізніше.",
+                  "Резерв — ваш запас на непередбачені витрати. Інші заощадження вкажіть окремо.",
+                  "Ви самі обираєте, скільки залишати вільним, відкладати на резерв, цілі та інвестиції.",
+                ][step]
+              }
+            </p>
+          </div>
+          <form
+            className="onboarding-form"
+            key={step}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (step < 2) move(step + 1);
+              else finish();
+            }}
+          >
+            {step === 0 ? (
+              <div className="form-grid two">
+                <Field
+                  label="Місячний дохід після податків"
+                  value={income}
+                  onChange={setIncome}
+                  suffix="₴"
+                  hint="Сума, яку отримуєте на руки"
+                />
+                <Field
+                  label="Обов’язкові витрати на місяць"
+                  value={expenses}
+                  onChange={setExpenses}
+                  suffix="₴"
+                  hint="Житло, їжа, транспорт і платежі"
+                />
+              </div>
+            ) : step === 1 ? (
+              <div className="form-grid two">
+                <Field
+                  label="Поточний фінансовий резерв"
+                  value={reserve}
+                  onChange={setReserve}
+                  suffix="₴"
+                  hint="Гроші, доступні в разі потреби"
+                />
+                <Field
+                  label="Інший поточний капітал (без резерву)"
+                  value={capital}
+                  onChange={setCapital}
+                  suffix="₴"
+                  hint="Заощадження й інвестиції окремо від резерву"
+                />
+              </div>
+            ) : (
+              <div className="onboarding-summary">
+                <span>Після введених витрат залишається</span>
+                <strong>
+                  {fmt(income - expenses)}
+                  <small> / місяць</small>
+                </strong>
+                <div>
+                  <span>
+                    Ваш резерв<b>{fmt(reserve)}</b>
+                  </span>
+                  <span>
+                    Інший капітал<b>{fmt(capital)}</b>
+                  </span>
+                </div>
+                {expenses > income && (
+                  <p>
+                    Витрати перевищують дохід. У бюджеті ви зможете скоригувати
+                    свій план.
+                  </p>
+                )}
+              </div>
+            )}
+            {step < 2 && (
+              <div className="onboarding-context">
+                <span>
+                  {step === 0
+                    ? "Залишок після витрат"
+                    : "Разом резерв і капітал"}
+                </span>
+                <strong>
+                  {fmt(step === 0 ? income - expenses : reserve + capital)}
+                </strong>
+              </div>
+            )}
+            <div className="form-actions onboarding-actions">
+              {step > 0 && (
+                <button
+                  type="button"
+                  className="button outline"
+                  onClick={() => move(step - 1)}
+                >
+                  <ArrowLeft size={18} />
+                  Назад
+                </button>
+              )}
+              <button className="button" type="submit">
+                {step === 2 ? "Відкрити мій єКапітал" : "Продовжити"}
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          </form>
+          <p className="onboarding-foot">
+            <ShieldCheck size={16} />
+            <span>
+              Дані зберігаються у вашому браузері.
+              <br />
+              Реєстрація не потрібна.
+            </span>
+          </p>
+        </section>
+      </div>
     </main>
   );
 }

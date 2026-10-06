@@ -175,6 +175,8 @@ test("encrypted backup downloads no plaintext and user data deletes only after c
   page,
 }) => {
   await onboard(page);
+  if (await page.getByRole("button", { name: "Меню", exact: true }).isVisible())
+    await page.getByRole("button", { name: "Меню", exact: true }).click();
   await page.getByRole("link", { name: "Налаштування", exact: true }).click();
   await page
     .getByLabel("Пароль backup (щонайменше 10 символів)")
@@ -381,4 +383,84 @@ test("market payload stays small and historical series loads only on demand", as
   await expect(
     page.getByText("Історичні дані, не очікувана дохідність", { exact: true }),
   ).toBeVisible();
+});
+
+test("amount editing, formatted summary and responsive app menu", async ({
+  page,
+}) => {
+  await page.goto("/app");
+  const income = page.getByLabel("Місячний дохід після податків");
+  await income.focus();
+  await expect(income).toHaveValue("");
+  await income.pressSequentially("0550");
+  await expect(income).toHaveValue("550");
+  await income.fill("65 000,50");
+  await page.getByLabel("Обов’язкові витрати на місяць").fill("43000");
+  await expect(income).toHaveValue("65000.5");
+  await expect(page.locator(".onboarding-context strong")).toContainText("22");
+  await page.getByRole("button", { name: "Продовжити" }).click();
+  await page.getByLabel("Поточний фінансовий резерв").fill("550");
+  await page.getByLabel("Інший поточний капітал (без резерву)").fill("55000");
+  await page.getByRole("button", { name: "Назад", exact: true }).click();
+  await expect(income).toHaveValue("65000.5");
+  await page.getByRole("button", { name: "Продовжити" }).click();
+  await expect(page.getByLabel("Поточний фінансовий резерв")).toHaveValue(
+    "550",
+  );
+  await page.getByRole("button", { name: "Продовжити" }).click();
+  await expect(page.locator(".onboarding-summary")).toContainText(/55\s000/);
+  await page.getByRole("button", { name: "Відкрити мій єКапітал" }).click();
+  await expect(page.getByText("Збережено", { exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 320, height: 640 });
+  const menu = page.getByRole("button", { name: "Меню", exact: true });
+  await menu.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(menu).toBeFocused();
+  await menu.click();
+  await page.getByRole("link", { name: "Капітал", exact: true }).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(page.getByLabel("Вартість Поточний капітал")).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.getByRole("link", { name: "Бюджет", exact: true }).click();
+  await expect(page.getByLabel("Сума Основний дохід")).toHaveValue("65000.5");
+  await page.getByRole("button", { name: "Додати дохід", exact: true }).click();
+  const amount = page.getByLabel("Сума Зарплата", { exact: true });
+  await amount.focus();
+  await expect(amount).toHaveValue("");
+  await amount.pressSequentially("0550");
+  await expect(amount).toHaveValue("550");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test("numeric drafts respect bounds and whole-number terms", async ({
+  page,
+}) => {
+  await page.goto("/deposit-calculator");
+  const months = page.getByLabel("Строк у місяцях", { exact: true });
+  const before = await page.locator(".metrics").textContent();
+  const valid = await months.inputValue();
+  await months.fill("0");
+  await expect(months).toHaveAttribute("aria-invalid", "true");
+  await expect(page.locator(".metrics")).toHaveText(before!);
+  await months.fill("1.5");
+  await expect(
+    page.getByText("Введіть ціле число", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Ставка банку", { exact: true }).focus();
+  await expect(months).toHaveValue(valid);
+  const sum = page.getByLabel("Сума депозиту", { exact: true });
+  await sum.fill("1000000000001");
+  await expect(sum).toHaveAttribute("aria-invalid", "true");
+  await sum.fill("50000,25");
+  await expect(sum).toHaveAttribute("aria-invalid", "false");
 });
