@@ -12,6 +12,20 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+.app-content .card-title > div {
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .app-content .form-grid,
+  .app-content .form-grid.two,
+  .app-content .goal-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-content .button {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
 @media (min-width: 761px) {
   .app-content .form-grid,
   .app-content .goal-cards {

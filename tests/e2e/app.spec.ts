@@ -60,7 +60,9 @@ async function navigate(page: Page, name: string) {
           })
     ).click();
   }
+  const href = await link.getAttribute("href");
   await link.click();
+  if (href) await page.waitForURL((url) => url.pathname === href);
 }
 test("first launch, cash flow, goal, allocation, saved scenario and reopen", async ({
   page,
@@ -285,6 +287,12 @@ test("all public and app routes respond without horizontal page overflow", async
   ]) {
     await page.goto("/app/" + path);
     await expect(page.locator(".page-title h1")).toBeVisible();
+    const overflow = await page.evaluate(() =>
+      [...document.querySelectorAll("main *")]
+        .filter((el) => el.getBoundingClientRect().right > innerWidth + 1)
+        .map((el) => ({ tag: el.tagName, class: el.className, right: el.getBoundingClientRect().right, text: el.textContent?.slice(0, 100) })),
+    );
+    if (overflow.length) console.log("Overflow diagnostics", path, overflow);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth + 1,
@@ -500,11 +508,9 @@ test("three inputs lead to an investment decision, saved assumptions and a next 
   await page.getByLabel("Сума для рішення (без резерву)").fill("100000");
   await page.getByLabel("Можу додавати щомісяця").fill("5000");
   await page.getByLabel("На скільки місяців?").fill("12");
-  const card = page
-    .locator(".comparison-card")
-    .filter({
-      has: page.getByRole("heading", { name: "Депозит", exact: true }),
-    });
+  const card = page.locator(".comparison-card").filter({
+    has: page.getByRole("heading", { name: "Депозит", exact: true }),
+  });
   await card.locator("summary").click();
   await page
     .getByLabel("Депозит: грошові виплати на рік", { exact: true })
@@ -530,6 +536,9 @@ test("three inputs lead to an investment decision, saved assumptions and a next 
     }),
   ).toBeVisible();
   await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Мої плани", exact: true }),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Порахувати знову" }).click();
   await expect(page.getByLabel("Сума для рішення (без резерву)")).toHaveValue(
     "100000",

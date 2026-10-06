@@ -11,5 +11,5 @@ const buildId = (await readFile(".next/BUILD_ID", "utf8")).trim();
 const worker = await readFile("public/sw.js", "utf8");
 await writeFile(
   ".next/standalone/public/sw.js",
-  worker.replace("ek-shell-v1", `ek-shell-${buildId}`),
+  worker.replace("ek-shell-v2", `ek-shell-${buildId}`),
 );

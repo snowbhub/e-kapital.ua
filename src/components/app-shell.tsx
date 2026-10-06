@@ -49,6 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav aria-label="Особистий кабінет">
           {nav.map(([slug, label, Icon]) => (
             <Link
+              prefetch={false}
               href={`/app${slug ? "/" + slug : ""}`}
               className={
                 path === `/app${slug ? "/" + slug : ""}` ? "active" : ""
@@ -74,6 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <LockKeyhole size={17} />
           <p>Приватно на вашому пристрої</p>
           <Link
+            prefetch={false}
             href="/assets"
             className="inline-link"
             style={{ marginTop: 18 }}
@@ -127,6 +129,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           const href = `/app${slug ? "/" + slug : ""}`;
           return (
             <Link
+              prefetch={false}
               key={slug}
               href={href}
               className={path === href ? "active" : ""}
@@ -172,6 +175,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav aria-label="Додаткові розділи">
           {extraNav.map(([slug, label, Icon]) => (
             <Link
+              prefetch={false}
               key={slug}
               href={`/app/${slug}`}
               aria-current={path === `/app/${slug}` ? "page" : undefined}
@@ -184,7 +188,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <ArrowUpRight size={18} />
             </Link>
           ))}
-          <Link href="/assets" onClick={() => menu.current?.close()}>
+          <Link
+            prefetch={false}
+            href="/assets"
+            onClick={() => menu.current?.close()}
+          >
             <span className="menu-icon">
               <ChartNoAxesCombined size={23} />
             </span>

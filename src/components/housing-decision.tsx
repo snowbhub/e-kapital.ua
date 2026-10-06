@@ -576,6 +576,7 @@ export function HousingDecision() {
                 <Bookmark size={17} /> Зберегти план житла
               </button>
               <Link
+                prefetch={false}
                 className="inline-link"
                 href={choice === "wait" ? "/app" : "/eoselia"}
               >
@@ -598,7 +599,9 @@ export function HousingDecision() {
             {investmentMode === "bond" && reference.bond
               ? `Орієнтир: ${reference.bond.isin}, останнє розміщення ${dateFmt(reference.bond.lastPlacement ?? reference.bond.meta.effectiveDate)}. `
               : ""}
-            <Link href="/data-sources">Джерела →</Link>
+            <Link prefetch={false} href="/data-sources">
+              Джерела →
+            </Link>
           </div>
         </>
       )}

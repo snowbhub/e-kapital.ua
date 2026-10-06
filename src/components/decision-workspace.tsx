@@ -283,7 +283,7 @@ export function DecisionWorkspace() {
         </div>
       </Card>
       {input.purpose === "home" && (
-        <Link href="/app/home" className="housing-entry">
+        <Link prefetch={false} href="/app/home" className="housing-entry">
           <span className="menu-icon">
             <Home size={24} />
           </span>
@@ -585,10 +585,11 @@ export function DecisionWorkspace() {
                   <Bookmark size={17} />
                   Зберегти мій план
                 </button>
-                <Link href="/app/plan" className="inline-link">
+                <Link prefetch={false} href="/app/plan" className="inline-link">
                   Мої збережені плани <ArrowRight size={16} />
                 </Link>
                 <Link
+                  prefetch={false}
                   href={
                     {
                       cash: "/reserve-calculator",
@@ -615,7 +616,9 @@ export function DecisionWorkspace() {
             Строк, ризики, потреба у виплатах і доступ до грошей мають
             відповідати вашій задачі. Комісії й податки початково 0: перевірте
             їх перед рішенням.{" "}
-            <Link href="/data-sources">Джерела та дати оновлення →</Link>
+            <Link prefetch={false} href="/data-sources">
+              Джерела та дати оновлення →
+            </Link>
           </p>
         </>
       )}

@@ -26,7 +26,7 @@ export function DecisionPlans() {
             title="План починається з одного рішення"
             body="Порівняйте свої варіанти й збережіть той, який хочете перевірити далі."
             action={
-              <Link className="button" href="/app">
+              <Link prefetch={false} className="button" href="/app">
                 Порівняти мої варіанти <ArrowRight size={17} />
               </Link>
             }
@@ -111,6 +111,7 @@ export function DecisionPlans() {
               </details>
               <div className="form-actions">
                 <Link
+                  prefetch={false}
                   className="button outline small"
                   href={p.kind === "housing" ? "/app/home" : "/app"}
                   onClick={() =>
@@ -171,8 +172,11 @@ export function DecisionPlans() {
       <p className="comparison-note">
         Плани зберігаються в цьому браузері. Для перенесення скористайтеся
         зашифрованою резервною копією в{" "}
-        <Link href="/app/settings">налаштуваннях</Link>. Реєстрація та
-        синхронізація між пристроями поки не потрібні для користування.
+        <Link prefetch={false} href="/app/settings">
+          налаштуваннях
+        </Link>
+        . Реєстрація та синхронізація між пристроями поки не потрібні для
+        користування.
       </p>
     </>
   );
