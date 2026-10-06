@@ -1,6 +1,8 @@
 /* Decision workspace: primary actions first, assumptions on demand. */
 .app-content {
   min-width: 0;
+  /* Contain native Safari control overflow without making a nested scroller. */
+  overflow-x: clip;
 }
 .app-content .form-grid > *,
 .app-content .field select,
