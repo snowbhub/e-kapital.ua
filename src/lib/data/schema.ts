@@ -80,6 +80,40 @@ export const eoseliaSchema = z.object({
   meta: metadataSchema,
 });
 export const marketSchema = z.object({
+  deposits: z
+    .array(
+      z.object({
+        id: z.string(),
+        bank: z.string(),
+        product: z.string(),
+        currency: z.enum(["UAH", "USD", "EUR"]),
+        minMonths: z.number().int().positive(),
+        maxMonths: z.number().int().positive(),
+        termDays: z.number().int().positive().nullable(),
+        rate: z.number().min(0).max(100),
+        minimum: z.number().positive(),
+        maximum: z.number().positive().nullable(),
+        payout: z.enum(["monthly", "capitalized", "maturity"]),
+        replenishable: z.boolean(),
+        topUpCutoffMonths: z.number().int().min(0),
+        earlyWithdrawal: z.boolean(),
+        notes: z.string(),
+        meta: metadataSchema,
+      }),
+    )
+    .default([]),
+  fxQuotes: z
+    .array(
+      z.object({
+        bank: z.string(),
+        currency: z.enum(["USD", "EUR"]),
+        buy: z.number().positive(),
+        sell: z.number().positive(),
+        channel: z.string(),
+        meta: metadataSchema,
+      }),
+    )
+    .default([]),
   rates: z.array(rateSchema),
   bonds: z.array(bondSchema),
   funds: z.array(fundSchema),
@@ -100,11 +134,15 @@ export const marketSchema = z.object({
   ),
 });
 export type Market = z.infer<typeof marketSchema>;
+export type DepositOffer = Market["deposits"][number];
+export type FxQuote = Market["fxQuotes"][number];
 export type MarketBond = z.infer<typeof bondSchema>;
 export type MarketFund = z.infer<typeof fundSchema>;
 export type Eoselia = z.infer<typeof eoseliaSchema>;
 export type Meta = z.infer<typeof metadataSchema>;
 export const emptyMarket: Market = {
+  deposits: [],
+  fxQuotes: [],
   rates: [],
   bonds: [],
   funds: [],

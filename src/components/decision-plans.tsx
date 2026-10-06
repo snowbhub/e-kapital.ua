@@ -44,7 +44,8 @@ export function DecisionPlans() {
                 <small>{dateFmt(p.createdAt.slice(0, 10))}</small>
               </div>
               <p className="plan-inputs">
-                {fmt(p.inputs.capital)} зараз · {fmt(p.inputs.monthly)} / міс. ·{" "}
+                {fmt(p.inputs.capital, p.inputs.currency)} зараз ·{" "}
+                {fmt(p.inputs.monthly, p.inputs.currency)} / міс. ·{" "}
                 {p.inputs.months} міс.
               </p>
               <p>{p.result}</p>
@@ -55,54 +56,63 @@ export function DecisionPlans() {
               <details className="option-assumptions">
                 <summary>Припущення цього плану</summary>
                 <ul>
-                  {Object.entries(p.assumptions).map(([k, v]) => (
-                    <li key={k}>
-                      <span>
-                        {(
-                          {
-                            cashRate: "Виплати, %/рік",
-                            priceRate: "Зміна вартості, %/рік",
-                            tax: "Податок із виплат, %",
-                            annualFee: "Річні комісії, %",
-                            entryFee: "Витрати на вхід, %",
-                            exitFee: "Витрати на вихід, %",
-                            inflation: "Інфляція, %/рік",
-                            reinvest: "Реінвестування",
-                            stress: "Стрес-сценарій",
-                            reference: "Орієнтир",
-                            referenceDate: "Дата орієнтира",
-                            price: "Ціна житла",
-                            rent: "Оренда / місяць",
-                            age: "Вік",
-                            years: "Строк кредиту, років",
-                            down: "Внесок",
-                            fees: "Разові витрати",
-                            upkeep: "Утримання / місяць",
-                            houseGrowth: "Зміна ціни житла, %/рік",
-                            rentGrowth: "Зростання оренди, %/рік",
-                            investmentRate: "Чиста ставка сценарію, %/рік",
-                            cashYield: "Чисті грошові виплати, %/рік",
-                            subsidized: "Пільгова ставка",
-                            category: "Категорія",
-                            investmentMode: "Сценарій інвестицій",
-                            referenceIsin: "Випуск-орієнтир",
-                            referenceRateDate: "Дата розміщення",
-                            capital: "Капітал",
-                            monthly: "Поповнення",
-                            months: "Горизонт, місяців",
-                            purpose: "Мета",
-                          } as Record<string, string>
-                        )[k] ?? k}
-                      </span>
-                      <strong>
-                        {typeof v === "boolean"
-                          ? v
-                            ? "Так"
-                            : "Ні"
-                          : String(v)}
-                      </strong>
-                    </li>
-                  ))}
+                  {Object.entries(p.assumptions)
+                    .filter(([k]) => !["mode", "optionId"].includes(k))
+                    .map(([k, v]) => (
+                      <li key={k}>
+                        <span>
+                          {(
+                            {
+                              bank: "Банк або інструмент",
+                              currency: "Валюта",
+                              rate: "Ставка до податку, %/рік",
+                              netRate: "Ставка після податку, %/рік",
+                              source: "Офіційне джерело",
+                              projectedTotal: "Сума наприкінці у ₴",
+                              realTotal: "Купівельна спроможність у ₴",
+                              cashRate: "Виплати, %/рік",
+                              priceRate: "Зміна вартості, %/рік",
+                              tax: "Податок із виплат, %",
+                              annualFee: "Річні комісії, %",
+                              entryFee: "Витрати на вхід, %",
+                              exitFee: "Витрати на вихід, %",
+                              inflation: "Інфляція, %/рік",
+                              reinvest: "Реінвестування",
+                              stress: "Стрес-сценарій",
+                              reference: "Орієнтир",
+                              referenceDate: "Дата орієнтира",
+                              price: "Ціна житла",
+                              rent: "Оренда / місяць",
+                              age: "Вік",
+                              years: "Строк кредиту, років",
+                              down: "Внесок",
+                              fees: "Разові витрати",
+                              upkeep: "Утримання / місяць",
+                              houseGrowth: "Зміна ціни житла, %/рік",
+                              rentGrowth: "Зростання оренди, %/рік",
+                              investmentRate: "Чиста ставка сценарію, %/рік",
+                              cashYield: "Чисті грошові виплати, %/рік",
+                              subsidized: "Пільгова ставка",
+                              category: "Категорія",
+                              investmentMode: "Сценарій інвестицій",
+                              referenceIsin: "Випуск-орієнтир",
+                              referenceRateDate: "Дата розміщення",
+                              capital: "Капітал",
+                              monthly: "Поповнення",
+                              months: "Горизонт, місяців",
+                              purpose: "Мета",
+                            } as Record<string, string>
+                          )[k] ?? k}
+                        </span>
+                        <strong>
+                          {typeof v === "boolean"
+                            ? v
+                              ? "Так"
+                              : "Ні"
+                            : String(v)}
+                        </strong>
+                      </li>
+                    ))}
                 </ul>
                 <p>
                   Дані джерел на момент збереження: {dateFmt(p.sourceDate)}. Це
@@ -113,7 +123,13 @@ export function DecisionPlans() {
                 <Link
                   prefetch={false}
                   className="button outline small"
-                  href={p.kind === "housing" ? "/app/home" : "/app"}
+                  href={
+                    p.kind === "housing"
+                      ? "/app/home"
+                      : p.assumptions.mode === "automatic"
+                        ? "/app"
+                        : "/app/scenario"
+                  }
                   onClick={() =>
                     update((s) => ({
                       ...s,

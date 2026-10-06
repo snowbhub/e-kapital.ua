@@ -4,7 +4,8 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "єКапітал — навігатор особистого капіталу",
     short_name: "єКапітал",
-    description: "Ваш бюджет, резерв, цілі та власні сценарії.",
+    description:
+      "Готові фінансові варіанти з урахуванням податків та інфляції.",
     start_url: "/app",
     scope: "/",
     display: "standalone",
@@ -13,19 +14,19 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "uk",
     icons: [
       {
-        src: "/icons/icon-192.png",
+        src: "/icons/wallet-192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icons/icon-512.png",
+        src: "/icons/wallet-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icons/maskable-512.png",
+        src: "/icons/wallet-maskable-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

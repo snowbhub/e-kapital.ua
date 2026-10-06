@@ -1,6 +1,7 @@
 import { marketSchema, emptyMarket, type Market } from "./schema";
 import { parseFundNav, parseFundDistributions } from "./fund-workbook";
 import { fetchNbuRates } from "./nbu-refresh";
+import { refreshBanks } from "./bank-providers";
 import {
   sources,
   fetchOfficial,
@@ -232,5 +233,5 @@ export async function syncMarket(
       }
     }
   }
-  return marketSchema.parse(next);
+  return marketSchema.parse(await refreshBanks(next));
 }

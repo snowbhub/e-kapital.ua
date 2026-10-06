@@ -6,11 +6,14 @@ import { Card, Field, Select, Badge, Chart } from "./ui";
 import { useCapital } from "./profile-context";
 import { compareHousing, decisionReferences } from "@/lib/finance/decision";
 import { fmt, dateFmt, today, pct } from "@/lib/format";
+import { automaticOptions, toUahInputs } from "@/lib/finance/automatic";
 
 export function HousingDecision() {
   const { state, update, persist, market } = useCapital();
-  const input = state.decision.inputs,
+  const input = toUahInputs(state.decision.inputs, market, today()),
     terms = market.eoselia;
+  const auto = automaticOptions(market, input, today());
+  const depositRate = auto.winners.UAH?.netRate ?? 0;
   const resume = state.decision.plans.find(
     (p) => p.id === state.decision.resumeId && p.kind === "housing",
   );
@@ -33,10 +36,10 @@ export function HousingDecision() {
   const [houseGrowth, setHouseGrowth] = useState(n("houseGrowth")),
     [rentGrowth, setRentGrowth] = useState(n("rentGrowth"));
   const [investmentMode, setInvestmentMode] = useState(
-      resume ? "custom" : "cash",
+      resume ? "custom" : "deposit",
     ),
     [customRate, setRate] = useState(n("investmentRate"));
-  const [cashYield, setCashYield] = useState(n("cashYield")),
+  const [cashYield, setCashYield] = useState(n("cashYield", depositRate)),
     [stress, setStress] = useState(Boolean(resume?.assumptions.stress));
   const [choice, setChoice] = useState(
       String(resume?.assumptions.choice ?? "wait"),
@@ -46,11 +49,13 @@ export function HousingDecision() {
   const reference = decisionReferences(market, today());
   const rate = stress
     ? 0
-    : investmentMode === "bond"
-      ? (reference.bond?.publishedRate ?? 0)
-      : investmentMode === "custom"
-        ? customRate
-        : 0;
+    : investmentMode === "deposit"
+      ? depositRate
+      : investmentMode === "bond"
+        ? (reference.bond?.publishedRate ?? 0)
+        : investmentMode === "custom"
+          ? customRate
+          : 0;
   const subsidized =
     terms?.categories.find((c) => c.id === category)?.subsidized ?? false;
   const minimum =
@@ -87,7 +92,7 @@ export function HousingDecision() {
   const change = (part: Partial<typeof input>) => {
     update((s) => ({
       ...s,
-      decision: { ...s.decision, inputs: { ...s.decision.inputs, ...part } },
+      decision: { ...s.decision, inputs: { ...input, ...part } },
     }));
     setSaved(false);
   };
@@ -279,6 +284,10 @@ export function HousingDecision() {
                 setSaved(false);
               }}
               options={[
+                {
+                  value: "deposit",
+                  label: `Депозит: ${pct(depositRate)} після податку (автоматично)`,
+                },
                 { value: "cash", label: "Без інвестиційного доходу" },
                 { value: "bond", label: "Сценарій за орієнтиром Мінфіну" },
                 { value: "custom", label: "Власна чиста дохідність" },
@@ -596,6 +605,9 @@ export function HousingDecision() {
             комісії, страхування та утримання. Дохідність реінвестування в
             сценарії стала; конкретні ОВДП мають строк погашення й ціну брокера.
             Валюта сама по собі не забезпечує покриття гривневого платежу.{" "}
+            {investmentMode === "deposit" && auto.winners.UAH
+              ? `Автоматичний орієнтир: ${auto.winners.UAH.title}, ${pct(depositRate)} після податку. Тут це стала сценарна ставка, а не симуляція договору: строки блокування, поповнення й майбутні ставки перевірте в банківському порівнянні. `
+              : ""}
             {investmentMode === "bond" && reference.bond
               ? `Орієнтир: ${reference.bond.isin}, останнє розміщення ${dateFmt(reference.bond.lastPlacement ?? reference.bond.meta.effectiveDate)}. `
               : ""}

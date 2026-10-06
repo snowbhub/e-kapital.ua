@@ -222,9 +222,7 @@ test("encrypted backup downloads no plaintext and user data deletes only after c
   await page
     .getByRole("button", { name: "Остаточно видалити", exact: true })
     .click();
-  await expect(page.getByLabel("Сума для рішення (без резерву)")).toHaveValue(
-    "0",
-  );
+  await expect(page.getByLabel("Вільні гроші зараз")).toHaveValue("0");
 });
 test("manifest, sources, privacy, sitemap, JSON-LD and provider disclosures", async ({
   page,
@@ -290,7 +288,12 @@ test("all public and app routes respond without horizontal page overflow", async
     const overflow = await page.evaluate(() =>
       [...document.querySelectorAll("main *")]
         .filter((el) => el.getBoundingClientRect().right > innerWidth + 1)
-        .map((el) => ({ tag: el.tagName, class: el.className, right: el.getBoundingClientRect().right, text: el.textContent?.slice(0, 100) })),
+        .map((el) => ({
+          tag: el.tagName,
+          class: el.className,
+          right: el.getBoundingClientRect().right,
+          text: el.textContent?.slice(0, 100),
+        })),
     );
     if (overflow.length) console.log("Overflow diagnostics", path, overflow);
     expect(
@@ -352,7 +355,7 @@ test("offline app shell retains IndexedDB state", async ({
   try {
     await onboard(page, origin);
     await page.goto(origin + "/app");
-    await page.getByLabel("Сума для рішення (без резерву)").fill("120000");
+    await page.getByLabel("Вільні гроші зараз").fill("120000");
     await expect(page.getByText("Збережено", { exact: true })).toBeVisible();
     await page.evaluate(() =>
       navigator.serviceWorker.ready.then(() => undefined),
@@ -374,11 +377,9 @@ test("offline app shell retains IndexedDB state", async ({
     const response = await page.reload();
     expect(response?.fromServiceWorker()).toBe(true);
     await expect(
-      page.getByRole("heading", { name: "Що можуть дати ваші гроші?" }),
+      page.getByRole("heading", { name: "Що робити з моїми грошима?" }),
     ).toBeVisible();
-    await expect(page.getByLabel("Сума для рішення (без резерву)")).toHaveValue(
-      "120000",
-    );
+    await expect(page.getByLabel("Вільні гроші зараз")).toHaveValue("120000");
   } finally {
     if (proxy) {
       proxy.closeAllConnections();
@@ -494,12 +495,53 @@ test("numeric drafts respect bounds and whole-number terms", async ({
   await expect(sum).toHaveAttribute("aria-invalid", "false");
 });
 
-test("three inputs lead to an investment decision, saved assumptions and a next step", async ({
+test("automatic offers include taxes, inflation and a persisted next step", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/app");
+  await expect(
+    page.getByRole("heading", { name: "Що робити з моїми грошима?" }),
+  ).toBeVisible();
+  await expect(page.locator(".auto-input-card input")).toHaveCount(2);
+  await page.getByLabel("Вільні гроші зараз").fill("160000");
+  await page.getByLabel("Можу відкладати щомісяця").fill("5000");
+  await expect(
+    page.locator(".bank-offers").first().locator(".bank-offer"),
+  ).toHaveCount(2);
+  await expect(page.locator(".auto-stats")).toContainText(
+    "Втрата купівельної спроможності",
+  );
+  await expect(page.locator(".currency-columns>div")).toHaveCount(3);
+  await page.getByRole("button", { name: "Зберегти це рішення" }).click();
+  await expect(
+    page.getByRole("button", { name: "План збережено" }),
+  ).toBeVisible();
+  await navigate(page, "Мої плани");
+  await page.reload();
+  await expect(page.getByRole("heading", { name: /monobank/ })).toBeVisible();
+  await page.getByRole("link", { name: "Порахувати знову" }).click();
+  await expect(page.getByLabel("Вільні гроші зараз")).toHaveValue("160000");
+  await page.setViewportSize({ width: 320, height: 640 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: `test-results/automatic-${test.info().project.name}.png`,
+    fullPage: true,
+  });
+  expect(errors).toEqual([]);
+});
+
+test("three inputs lead to an investment decision, saved assumptions and a next step", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/app/scenario");
   await expect(
     page.getByRole("heading", { name: "Що можуть дати ваші гроші?" }),
   ).toBeVisible();

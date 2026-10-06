@@ -1,6 +1,7 @@
 import { z } from "zod";
 const amount = z.number().finite().min(0).max(1e12);
 export const decisionInputsSchema = z.object({
+  currency: z.enum(["UAH", "USD", "EUR"]).default("UAH"),
   capital: amount.default(0),
   monthly: amount.default(0),
   months: z.number().int().min(1).max(360).default(12),
@@ -24,6 +25,7 @@ export const decisionSchema = z
   .object({
     resumeId: z.string().max(100).nullable().default(null),
     inputs: decisionInputsSchema.default({
+      currency: "UAH",
       capital: 0,
       monthly: 0,
       months: 12,
@@ -33,7 +35,13 @@ export const decisionSchema = z
   })
   .default({
     resumeId: null,
-    inputs: { capital: 0, monthly: 0, months: 12, purpose: "grow" },
+    inputs: {
+      currency: "UAH",
+      capital: 0,
+      monthly: 0,
+      months: 12,
+      purpose: "grow",
+    },
     plans: [],
   });
 export type DecisionPlan = z.infer<typeof decisionPlanSchema>;

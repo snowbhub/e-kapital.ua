@@ -7,6 +7,9 @@ import {
   refreshNbuRates,
 } from "../../src/lib/data/nbu-refresh";
 import { syncMarket } from "../../src/lib/data/sync";
+vi.mock("../../src/lib/data/bank-providers", () => ({
+  refreshBanks: vi.fn(async (market) => market),
+}));
 
 vi.mock("../../src/lib/data/providers", async (original) => ({
   ...(await original<typeof import("../../src/lib/data/providers")>()),
