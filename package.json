@@ -1,0 +1,49 @@
+{
+  "name": "e-kapital",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "node scripts/guard.mjs && next build --webpack",
+    "start": "node scripts/start.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "data:sync": "node --import tsx scripts/ingest.ts",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e",
+    "postbuild": "node scripts/postbuild.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "cheerio": "^1.1.0",
+    "fast-xml-parser": "^5.0.0",
+    "fflate": "^0.8.3",
+    "idb": "^8.0.0",
+    "lucide-react": "^0.468.0",
+    "next": "16.3.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@sparticuz/chromium": "^153.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.3.8",
+    "prettier": "^3.9.9",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "5.0.3"
+  },
+  "type": "module"
+}
