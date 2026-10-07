@@ -19,12 +19,36 @@ export function ProfileProvider({
   const profile = useProfile();
   const [market, setMarket] = useState<Market>(initialMarket);
   useEffect(() => {
-    fetch("/api/market?v=bank-offers-v1", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((v) => {
-        if (v) setMarket((previous) => acceptMarketResponse(previous, v));
+    const controller = new AbortController();
+    let lastAttempt = 0;
+    const refresh = () => {
+      if (
+        Date.now() - lastAttempt < 5 * 60 * 1000 ||
+        document.visibilityState !== "visible"
+      )
+        return;
+      lastAttempt = Date.now();
+      fetch("/api/market?v=opportunities-v2", {
+        cache: "no-store",
+        signal: controller.signal,
       })
-      .catch(() => {});
+        .then((r) => (r.ok ? r.json() : null))
+        .then((v) => {
+          if (v && !controller.signal.aborted)
+            setMarket((previous) => acceptMarketResponse(previous, v));
+        })
+        .catch(() => {});
+    };
+    refresh();
+    const timer = setInterval(refresh, 6 * 60 * 60 * 1000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
   }, []);
   return (
     <context.Provider value={{ ...profile, market }}>

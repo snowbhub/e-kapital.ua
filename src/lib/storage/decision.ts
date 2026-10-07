@@ -4,6 +4,7 @@ export const decisionInputsSchema = z.object({
   referenceCurrency: z.enum(["UAH", "USD", "EUR"]).optional(),
   macro: z.enum(["stable", "history5", "history10", "stress"]).optional(),
   savingFrequency: z.enum(["monthly", "annual"]).optional(),
+  valuation: z.enum(["reference", "real"]).optional(),
   currency: z.enum(["UAH", "USD", "EUR"]).default("UAH"),
   capital: amount.default(0),
   monthly: amount.default(0),

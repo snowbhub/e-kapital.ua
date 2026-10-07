@@ -142,7 +142,13 @@ export function depositProjection(
     offer.bank.startsWith("monobank") &&
     offer.currency !== "UAH" &&
     input.currency !== offer.currency &&
-    (capital * ask > 200000 || monthly * ask > 200000)
+    (capital * ask > 200000 ||
+      monthly * ask > 200000 ||
+      (fxGrowth &&
+        input.monthly *
+          from *
+          Math.max(1, fxFactor(input.currency, input.months, fxGrowth)) >
+          200000))
   )
     return null;
   const delay =

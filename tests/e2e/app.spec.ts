@@ -578,7 +578,10 @@ test("capital opportunities compare currency, purchasing power, history and save
     .getByRole("button", { name: "Як було раніше", exact: true })
     .click();
   await expect(page.locator(".historical-bars>div")).toHaveCount(3);
-  await page.getByRole("button", { name: "10 років", exact: true }).click();
+  await page
+    .locator(".historical-stage")
+    .getByRole("button", { name: "10 років", exact: true })
+    .click();
   await expect(page.locator(".historical-bottom")).toContainText("Ціни зросли");
   await page.setViewportSize({ width: 320, height: 640 });
   expect(

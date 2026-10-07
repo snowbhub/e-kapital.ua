@@ -42,7 +42,7 @@ export function OpportunityWorkspace() {
   const [selectedId, setSelectedId] = useState(
     String(resume?.assumptions.optionId ?? ""),
   );
-  const [real, setReal] = useState(false);
+  const real = input.valuation === "real";
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -302,8 +302,7 @@ export function OpportunityWorkspace() {
                     key={c}
                     aria-pressed={reference === c && !real}
                     onClick={() => {
-                      change({ referenceCurrency: c });
-                      setReal(false);
+                      change({ referenceCurrency: c, valuation: "reference" });
                     }}
                   >
                     {c}
@@ -312,8 +311,7 @@ export function OpportunityWorkspace() {
                 <button
                   aria-pressed={real}
                   onClick={() => {
-                    setReal(true);
-                    setSaved(false);
+                    change({ valuation: "real" });
                   }}
                 >
                   Ціни сьогодні
