@@ -4,6 +4,7 @@ import { parseStoredMarket, marketSchema, type Market } from "./schema";
 import { applyNbuRefresh, refreshNbuRates } from "./nbu-refresh";
 import { unstable_cache } from "next/cache";
 import { refreshBanks } from "./bank-providers";
+import { applyFundRefresh, refreshFundPublicData } from "./fund-refresh";
 import {
   applyMacroRefresh,
   monthlyCheckpoints,
@@ -67,15 +68,24 @@ const refreshOffers = unstable_cache(
   { revalidate: 21600 },
 );
 export async function getMarket() {
-  const [market, rates, macro] = await Promise.all([
+  const [market, rates, macro, funds] = await Promise.all([
     refreshOffers(),
     refreshRates(),
     refreshMacro(),
+    refreshFunds(),
   ]);
-  return applyMacroRefresh(applyNbuRefresh(market, rates), macro);
+  return applyFundRefresh(
+    applyMacroRefresh(applyNbuRefresh(market, rates), macro),
+    funds,
+  );
 }
 const refreshMacro = unstable_cache(
   () => refreshMacroData(),
   ["official-macro-history-v1"],
   { revalidate: 86400 },
+);
+const refreshFunds = unstable_cache(
+  () => refreshFundPublicData(),
+  ["official-fund-updates-v1"],
+  { revalidate: 21600 },
 );

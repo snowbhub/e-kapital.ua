@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Field } from "./ui";
 import { useCapital } from "./profile-context";
-import { fmt, pct, today } from "@/lib/format";
+import { fmt, pct, num, today } from "@/lib/format";
 import {
   automaticOptions,
   recentInflation,
@@ -301,7 +301,7 @@ function VentureWorkspace({ kind }: { kind: "property" | "business" }) {
                 aria-pressed={months === m}
                 onClick={() => setMonths(m)}
               >
-                {m / 12} {m === 12 ? "рік" : "років"}
+                {m / 12} {m === 12 ? "рік" : m === 36 ? "роки" : "років"}
               </button>
             ))}
           </div>
@@ -360,7 +360,7 @@ function VentureWorkspace({ kind }: { kind: "property" | "business" }) {
                   <strong>
                     {property
                       ? rental.payback !== null
-                        ? `${rental.payback.toFixed(1)} років`
+                        ? `${num(rental.payback, 1)} років`
                         : "Не окупається"
                       : business.payback !== null
                         ? `${Math.ceil(business.payback)} міс.`

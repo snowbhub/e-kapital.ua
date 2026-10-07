@@ -44,7 +44,11 @@ export const meta = (
   freshness,
   effectiveDateBasis: basis,
 });
-export async function fetchOfficial(url: string, accept = "*/*") {
+export async function fetchOfficial(
+  url: string,
+  accept = "*/*",
+  timeoutMs = 20000,
+) {
   const allowed = [
     "bank.gov.ua",
     "bonds.gov.ua",
@@ -63,7 +67,7 @@ export async function fetchOfficial(url: string, accept = "*/*") {
       "User-Agent":
         "e-kapital/0.1 public-data (+https://github.com/snowbhub/e-kapital)",
     },
-    signal: AbortSignal.timeout(20000),
+    signal: AbortSignal.timeout(timeoutMs),
     redirect: "error",
   });
   if (!response.ok)

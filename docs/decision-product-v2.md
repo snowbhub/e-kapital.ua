@@ -19,7 +19,8 @@ Find what a person can realistically explore with available money; compare conse
 
 - Bank offers: official provider URLs in bank-providers.ts, six-hour refresh with last-verified retention and staleness exclusion.
 - FX/CPI history: NBU + State Statistics; month-end checkpoints at initial load, full daily history on demand.
-- Runtime public macro refresh checks CPI and USD/EUR history independently every 24 hours. Failed or older source responses preserve last verified series and report source health; fund reports still follow scheduled ingestion.
+- Runtime public macro refresh checks CPI and USD/EUR history independently every 24 hours. Failed or older source responses preserve last verified series and report source health.
+- Fund prices refresh every six hours. Official REIT dividend news supplements the issuer's older workbook; per-certificate gross amount, reporting period, publication date and source link are preserved. Historical reports still follow scheduled ingestion. Future-dated publications and unverifiable net-only totals are excluded.
 - FOP 2026: https://sumy.tax.gov.ua/media-ark/news-ark/print-975635.html
 - ESV: https://ck.tax.gov.ua/media-ark/news-ark/978697.html
 - Rent tax: https://rv.tax.gov.ua/deklaratsiyna-kampaniya-2026/informatsiyni-povidomlennya/print-1047451.html
