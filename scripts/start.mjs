@@ -20,8 +20,15 @@ if (process.env.DATABASE_URL) {
     let pool;
     try {
       const { Pool } = await import("pg");
+      const connection = new URL(process.env.DATABASE_URL);
+      const ca = process.env.DATABASE_CA_CERT;
+      if (ca) {
+        connection.searchParams.delete("sslmode");
+        connection.searchParams.delete("sslrootcert");
+      }
       pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
+        connectionString: connection.toString(),
+        ...(ca ? { ssl: { ca, rejectUnauthorized: true } } : {}),
         max: 1,
         connectionTimeoutMillis: 5000,
         statement_timeout: 10000,

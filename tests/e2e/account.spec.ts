@@ -6,8 +6,10 @@ test.skip(
 test("passkey registration, patch sync, logout, login and server authorization", async ({
   page,
   browserName,
+  baseURL,
 }) => {
   test.skip(browserName !== "chromium", "Virtual authenticator uses CDP");
+  const testOrigin = new URL(baseURL!).origin;
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("WebAuthn.enable");
   await cdp.send("WebAuthn.addVirtualAuthenticator", {
@@ -57,7 +59,7 @@ test("passkey registration, patch sync, logout, login and server authorization",
   expect(cross.status()).toBe(403);
   const conflict = await page.request.patch("/api/profile", {
     headers: {
-      Origin: "http://localhost:3000",
+      Origin: testOrigin,
       "Content-Type": "application/json",
     },
     data: { revision: 0, patch: { decision: p.state.decision } },
@@ -66,7 +68,7 @@ test("passkey registration, patch sync, logout, login and server authorization",
   const admin = await page.request.get("/api/admin/metrics");
   expect(admin.status()).toBe(403);
   const anonymousEvents = await page.request.post("/api/events", {
-    headers: { Origin: "http://localhost:3000" },
+    headers: { Origin: testOrigin },
     data: {
       events: [
         {

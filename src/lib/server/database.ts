@@ -1,7 +1,12 @@
 import { Pool, type PoolClient } from "pg";
 
 export const databaseSchema = `
-CREATE SCHEMA IF NOT EXISTS capital_private;
+DO $schema$
+BEGIN
+ IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='capital_private') THEN
+  EXECUTE 'CREATE SCHEMA capital_private';
+ END IF;
+END $schema$;
 REVOKE ALL ON SCHEMA capital_private FROM PUBLIC;
 CREATE TABLE IF NOT EXISTS capital_private.users (
  id uuid PRIMARY KEY, name text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(),
@@ -65,8 +70,15 @@ export function backendConfigured() {
 }
 export async function database() {
   if (!backendConfigured()) throw new Error("BACKEND_UNAVAILABLE");
+  const connection = new URL(process.env.DATABASE_URL!);
+  const ca = process.env.DATABASE_CA_CERT;
+  if (ca) {
+    connection.searchParams.delete("sslmode");
+    connection.searchParams.delete("sslrootcert");
+  }
   pool ??= new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: connection.toString(),
+    ...(ca ? { ssl: { ca, rejectUnauthorized: true } } : {}),
     max: 5,
     idleTimeoutMillis: 20000,
     connectionTimeoutMillis: 5000,
