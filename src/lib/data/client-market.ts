@@ -13,6 +13,9 @@ export function acceptMarketResponse(
     hasFx = "fxQuotes" in incoming;
   return {
     ...parsed.data,
+    history: Object.keys(parsed.data.history).length
+      ? parsed.data.history
+      : previous.history,
     deposits: hasDeposits ? parsed.data.deposits : previous.deposits,
     fxQuotes: hasFx ? parsed.data.fxQuotes : previous.fxQuotes,
     health: [

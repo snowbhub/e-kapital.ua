@@ -41,7 +41,17 @@ export function applyBankSeed(previous: Market): Market {
 }
 export function getSnapshot({ history = false } = {}): Market {
   const market = applyBankSeed(parseStoredMarket(snapshot));
-  if (!history) market.history = {};
+  if (!history) {
+    // Month-end checkpoints preserve a decade of context without shipping daily series.
+    market.history = Object.fromEntries(
+      ["usd", "eur"].map((code) => {
+        const months = new Map<string, Market["cpi"][number]>();
+        for (const point of market.history[code] ?? [])
+          months.set(point.date.slice(0, 7), point);
+        return [code, [...months.values()].slice(-134)];
+      }),
+    );
+  }
   return market;
 }
 const refreshRates = unstable_cache(
