@@ -678,6 +678,56 @@ test("automatic offers include taxes, inflation and a persisted next step", asyn
   expect(errors).toEqual([]);
 });
 
+test("fresh published fund evidence reaches the decision and saved plan", async ({
+  page,
+  request,
+}) => {
+  const response = await request.get("/api/market");
+  const market = await response.json();
+  const fund = market.funds.find((f: { id: string }) => f.id === "inzhur");
+  const sourceUrl =
+    "https://www.inzhur.reit/news/inzhur-viplativ-dividendi-za-serpen-2026-roku";
+  fund.distributions = [
+    {
+      date: "2026-08-01",
+      amount: 0.093,
+      dateBasis: "period",
+      publishedAt: "2026-09-10",
+      sourceUrl,
+      retrievedAt: new Date().toISOString(),
+    },
+  ];
+  await page.route("**/api/market*", (route) =>
+    route.fulfill({ status: 200, json: market }),
+  );
+  await page.goto("/app");
+  await page.getByLabel("Вільні гроші зараз").fill("10000");
+  await page.getByRole("button", { name: "Усе", exact: true }).click();
+  await page
+    .locator(".opportunity-row")
+    .filter({ hasText: "Inzhur REIT" })
+    .click();
+  await expect(
+    page.getByRole("link", { name: "Відкрити джерело", exact: true }),
+  ).toHaveAttribute("href", sourceUrl);
+  await page.getByText("Ризики й деталі розрахунку", { exact: true }).click();
+  await expect(page.locator(".action-dock")).toContainText("2026-09-10");
+  await page
+    .getByRole("button", { name: "Зберегти це рішення", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "План збережено", exact: true }),
+  ).toBeVisible();
+  await navigate(page, "Мої плани");
+  await page.getByText("Припущення цього плану", { exact: true }).click();
+  await expect(page.locator(".option-assumptions")).toContainText(
+    "Валюта оцінки результату",
+  );
+  await expect(page.locator(".option-assumptions")).not.toContainText(
+    "referenceCurrency",
+  );
+});
+
 test("old cached market payload remains compatible with the new dashboard", async ({
   page,
   request,

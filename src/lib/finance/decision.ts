@@ -58,7 +58,7 @@ export function decisionReferences(market: Market, date: string) {
     );
   const fund = market.funds.find((f) => f.id === "inzhur");
   const latest = fund?.distributions
-    .filter((d) => d.date <= date)
+    .filter((d) => d.date <= date && (!d.publishedAt || d.publishedAt <= date))
     .sort((a, b) => a.date.localeCompare(b.date))
     .at(-1);
   return {
