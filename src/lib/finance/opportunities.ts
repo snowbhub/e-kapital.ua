@@ -60,8 +60,8 @@ export function historicalContext(market: Market, years: number, date: string) {
     if (
       !first ||
       !last ||
-      (Date.parse(start) - Date.parse(first.date)) / 86400000 > 35 ||
-      (Date.parse(end) - Date.parse(last.date)) / 86400000 > 35
+      (Date.parse(start) - Date.parse(first.date)) / 86400000 > 7 ||
+      (Date.parse(end) - Date.parse(last.date)) / 86400000 > 7
     )
       return null;
     ratios[currency] = last.value / first.value;

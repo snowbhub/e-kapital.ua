@@ -4,6 +4,11 @@ import { parseStoredMarket, marketSchema, type Market } from "./schema";
 import { applyNbuRefresh, refreshNbuRates } from "./nbu-refresh";
 import { unstable_cache } from "next/cache";
 import { refreshBanks } from "./bank-providers";
+import {
+  applyMacroRefresh,
+  monthlyCheckpoints,
+  refreshMacroData,
+} from "./macro-refresh";
 export function applyBankSeed(previous: Market): Market {
   const market = {
     ...previous,
@@ -45,10 +50,7 @@ export function getSnapshot({ history = false } = {}): Market {
     // Month-end checkpoints preserve a decade of context without shipping daily series.
     market.history = Object.fromEntries(
       ["usd", "eur"].map((code) => {
-        const months = new Map<string, Market["cpi"][number]>();
-        for (const point of market.history[code] ?? [])
-          months.set(point.date.slice(0, 7), point);
-        return [code, [...months.values()].slice(-134)];
+        return [code, monthlyCheckpoints(market.history[code] ?? [])];
       }),
     );
   }
@@ -65,6 +67,15 @@ const refreshOffers = unstable_cache(
   { revalidate: 21600 },
 );
 export async function getMarket() {
-  const [market, rates] = await Promise.all([refreshOffers(), refreshRates()]);
-  return applyNbuRefresh(market, rates);
+  const [market, rates, macro] = await Promise.all([
+    refreshOffers(),
+    refreshRates(),
+    refreshMacro(),
+  ]);
+  return applyMacroRefresh(applyNbuRefresh(market, rates), macro);
 }
+const refreshMacro = unstable_cache(
+  () => refreshMacroData(),
+  ["official-macro-history-v1"],
+  { revalidate: 86400 },
+);

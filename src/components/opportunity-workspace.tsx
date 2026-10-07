@@ -552,7 +552,15 @@ export function OpportunityWorkspace() {
                   >
                     умови гарантування ФГВФО
                   </a>
-                  .
+                  . Окремо можна переглянути{" "}
+                  <a
+                    href="https://minfin.com.ua/ua/banks/rating/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    рейтинг стійкості Мінфіну та його методику
+                  </a>
+                  : це не гарантія надійності банку.
                 </p>
               </details>
             </section>
