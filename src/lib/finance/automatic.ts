@@ -2,6 +2,15 @@ import type { DepositOffer, FxQuote, Market } from "../data/schema";
 import { decisionReferences, projectInvestment } from "./decision";
 
 export type Currency = "UAH" | "USD" | "EUR";
+export type FxGrowth = { USD: number; EUR: number };
+export const fxFactor = (
+  currency: Currency,
+  month: number,
+  growth?: FxGrowth,
+) =>
+  currency === "UAH"
+    ? 1
+    : Math.pow(1 + (growth?.[currency] ?? 0) / 100, month / 12);
 export type AutomaticInput = {
   capital: number;
   monthly: number;
@@ -119,6 +128,7 @@ export function depositProjection(
   quotes: FxQuote[],
   inflation: number | null,
   date: string,
+  fxGrowth?: FxGrowth,
 ): AutomaticOption | null {
   const from = price(input.currency, quotes, "buy"),
     ask = price(offer.currency, quotes, "sell"),
@@ -132,7 +142,13 @@ export function depositProjection(
     offer.bank.startsWith("monobank") &&
     offer.currency !== "UAH" &&
     input.currency !== offer.currency &&
-    (capital * ask > 200000 || monthly * ask > 200000)
+    (capital * ask > 200000 ||
+      monthly * ask > 200000 ||
+      (fxGrowth &&
+        input.monthly *
+          from *
+          Math.max(1, fxFactor(input.currency, input.months, fxGrowth)) >
+          200000))
   )
     return null;
   const delay =
@@ -200,7 +216,9 @@ export function depositProjection(
     }
     if (now === monthAt(date, nextMonth)) {
       if (balance > 0 && offer.payout !== "maturity") pay();
-      outside += monthly;
+      outside +=
+        (monthly * fxFactor(input.currency, nextMonth, fxGrowth)) /
+        fxFactor(offer.currency, nextMonth, fxGrowth);
       if (
         balance > 0 &&
         offer.replenishable &&
@@ -227,7 +245,8 @@ export function depositProjection(
             balance +
             incomeWallet +
             accrued * (1 - automaticTax.deposit / 100)) *
-          bid,
+          bid *
+          fxFactor(offer.currency, nextMonth, fxGrowth),
       });
       nextMonth++;
     }
@@ -237,8 +256,15 @@ export function depositProjection(
     balance +
     incomeWallet +
     accrued * (1 - automaticTax.deposit / 100);
-  const total = nominalCurrency * bid,
-    contributed = (input.capital + input.monthly * input.months) * from;
+  const total =
+      nominalCurrency * bid * fxFactor(offer.currency, input.months, fxGrowth),
+    contributed =
+      (input.capital +
+        Array.from(
+          { length: input.months },
+          (_, i) => input.monthly * fxFactor(input.currency, i + 1, fxGrowth),
+        ).reduce((a, b) => a + b, 0)) *
+      from;
   return {
     id: `deposit:${offer.id}`,
     title: offer.bank,
@@ -277,7 +303,9 @@ export function depositProjection(
         : []),
       ...(offer.currency !== "UAH"
         ? [
-            "Курс у моделі незмінний; банківський спред включено. Фактичний курс депозиту може відрізнятися від публічного карткового.",
+            fxGrowth
+              ? "Курс змінюється за обраним сценарієм; майбутній курс невідомий. Спред включено, фактичний курс депозиту може відрізнятися."
+              : "Курс у моделі незмінний; банківський спред включено. Фактичний курс депозиту може відрізнятися від публічного карткового.",
           ]
         : []),
     ],

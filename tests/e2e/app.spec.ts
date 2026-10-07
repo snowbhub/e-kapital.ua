@@ -406,7 +406,9 @@ test("offline app shell retains IndexedDB state", async ({
     const response = await page.reload();
     expect(response?.fromServiceWorker()).toBe(true);
     await expect(
-      page.getByRole("heading", { name: "Що робити з моїми грошима?" }),
+      page.getByRole("heading", {
+        name: "Що я міг би зробити зі своїми грошима?",
+      }),
     ).toBeVisible();
     await expect(page.getByLabel("Вільні гроші зараз")).toHaveValue("120000");
   } finally {
@@ -425,7 +427,9 @@ test("market payload stays small and historical series loads only on demand", as
   expect(response.status()).toBe(200);
   const text = await response.text();
   expect(text.length).toBeLessThan(600000);
-  expect((await response.json()).history).toEqual({});
+  const summary = (await response.json()).history;
+  expect(summary.usd.length).toBeLessThanOrEqual(134);
+  expect(summary.eur.length).toBeLessThanOrEqual(134);
   const rows = await request.get(
     "/api/history?asset=usd&from=2025-01-01&to=2025-12-31",
   );
@@ -524,12 +528,119 @@ test("numeric drafts respect bounds and whole-number terms", async ({
   await expect(sum).toHaveAttribute("aria-invalid", "false");
 });
 
-test("automatic offers include taxes, inflation and a persisted next step", async ({
+test("capital opportunities compare currency, purchasing power, history and save a next step", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/app");
+  await expect(
+    page.getByRole("heading", {
+      name: "Що я міг би зробити зі своїми грошима?",
+    }),
+  ).toBeVisible();
+  await page.getByLabel("Вільні гроші зараз").fill("10000");
+  await page.getByLabel("Можу відкладати щомісяця").fill("1000");
+  await expect(page.locator(".opportunity-row").first()).toBeVisible();
+  await page
+    .getByRole("button", { name: "Показати за рік", exact: true })
+    .click();
+  await expect(page.getByLabel("Можу відкладати за рік")).toHaveValue("12000");
+  await page.getByRole("button", { name: "5 років", exact: true }).click();
+  await page.getByLabel("Умови майбутнього").selectOption("history10");
+  await page
+    .getByRole("button", { name: "Ціни сьогодні", exact: true })
+    .click();
+  await expect(page.locator(".outcome-stage")).toContainText(
+    "Купівельна спроможність",
+  );
+  await page.getByRole("button", { name: "Мікс", exact: true }).click();
+  await page
+    .locator(".opportunity-row")
+    .filter({ hasText: "Долар + Inzhur" })
+    .click();
+  await expect(page.locator(".outcome-stage h2")).toHaveText("Долар + Inzhur");
+  await page
+    .getByRole("button", { name: "Зберегти це рішення", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "План збережено", exact: true }),
+  ).toBeVisible();
+  await navigate(page, "Мої плани");
+  await expect(
+    page.getByRole("heading", { name: "Долар + Inzhur", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: "Порахувати знову", exact: true })
+    .click();
+  await expect(page.getByLabel("Вільні гроші зараз")).toHaveValue("10000");
+  await page
+    .getByRole("button", { name: "Як було раніше", exact: true })
+    .click();
+  await expect(page.locator(".historical-bars>div")).toHaveCount(3);
+  await page
+    .locator(".historical-stage")
+    .getByRole("button", { name: "10 років", exact: true })
+    .click();
+  await expect(page.locator(".historical-bottom")).toContainText("Ціни зросли");
+  await page.setViewportSize({ width: 320, height: 640 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Можливості", exact: true }).click();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: `test-results/opportunities-${test.info().project.name}.png`,
+    fullPage: true,
+  });
+  expect(errors).toEqual([]);
+});
+
+test("concrete property and business models disclose assumptions, vacancy and loss risk", async ({
+  page,
+}) => {
+  await page.goto("/app/property");
+  await expect(
+    page.getByRole("heading", { name: "А якщо нерухомість?" }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Підставити навчальний приклад", exact: true })
+    .click();
+  await expect(page.locator(".outcome-stage")).toContainText(
+    "НАВЧАЛЬНИЙ ПРИКЛАД",
+  );
+  await expect(page.locator(".venture-results")).toContainText("Окупність");
+  await page.getByLabel("Місяців без орендаря за рік").fill("12");
+  await expect(page.locator(".venture-results")).toContainText("Не окупається");
+  await page.goto("/app/business");
+  await page
+    .getByRole("button", { name: "Підставити навчальний приклад", exact: true })
+    .click();
+  await expect(page.locator(".venture-results")).toContainText(
+    "Виручка для виходу в нуль",
+  );
+  await page.getByRole("button", { name: "Виручка −40%", exact: true }).click();
+  await expect(page.locator(".venture-results")).toContainText("Не окупається");
+  await page.setViewportSize({ width: 320, height: 640 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true);
+});
+
+test("automatic offers include taxes, inflation and a persisted next step", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/app/offers");
   await expect(
     page.getByRole("heading", { name: "Що робити з моїми грошима?" }),
   ).toBeVisible();
@@ -582,11 +693,11 @@ test("old cached market payload remains compatible with the new dashboard", asyn
   );
   await page.goto("/app");
   await page.getByLabel("Вільні гроші зараз").fill("100000");
+  await expect(page.locator(".opportunity-row").first()).toBeVisible();
   await expect(
-    page.locator(".bank-offers").first().locator(".bank-offer").first(),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Що робити з моїми грошима?" }),
+    page.getByRole("heading", {
+      name: "Що я міг би зробити зі своїми грошима?",
+    }),
   ).toBeVisible();
   expect(errors).toEqual([]);
 });

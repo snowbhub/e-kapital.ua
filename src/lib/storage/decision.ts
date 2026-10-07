@@ -1,6 +1,10 @@
 import { z } from "zod";
 const amount = z.number().finite().min(0).max(1e12);
 export const decisionInputsSchema = z.object({
+  referenceCurrency: z.enum(["UAH", "USD", "EUR"]).optional(),
+  macro: z.enum(["stable", "history5", "history10", "stress"]).optional(),
+  savingFrequency: z.enum(["monthly", "annual"]).optional(),
+  valuation: z.enum(["reference", "real"]).optional(),
   currency: z.enum(["UAH", "USD", "EUR"]).default("UAH"),
   capital: amount.default(0),
   monthly: amount.default(0),
@@ -10,7 +14,7 @@ export const decisionInputsSchema = z.object({
 export const decisionPlanSchema = z.object({
   id: z.string().max(100),
   createdAt: z.string(),
-  kind: z.enum(["investment", "housing"]),
+  kind: z.enum(["investment", "housing", "property", "business"]),
   name: z.string().max(160),
   inputs: decisionInputsSchema,
   assumptions: z.record(

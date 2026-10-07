@@ -38,7 +38,15 @@ export function DecisionPlans() {
             <Card key={p.id} className="decision-plan">
               <div className="card-title">
                 <div>
-                  <Badge>{p.kind === "housing" ? "Житло" : "Інвестиції"}</Badge>
+                  <Badge>
+                    {p.kind === "housing"
+                      ? "Житло"
+                      : p.kind === "property"
+                        ? "Нерухомість"
+                        : p.kind === "business"
+                          ? "Бізнес"
+                          : "Інвестиції"}
+                  </Badge>
                   <h2>{p.name}</h2>
                 </div>
                 <small>{dateFmt(p.createdAt.slice(0, 10))}</small>
@@ -124,11 +132,16 @@ export function DecisionPlans() {
                   prefetch={false}
                   className="button outline small"
                   href={
-                    p.kind === "housing"
-                      ? "/app/home"
-                      : p.assumptions.mode === "automatic"
-                        ? "/app"
-                        : "/app/scenario"
+                    p.kind === "property"
+                      ? "/app/property"
+                      : p.kind === "business"
+                        ? "/app/business"
+                        : p.kind === "housing"
+                          ? "/app/home"
+                          : p.assumptions.mode === "automatic" ||
+                              p.assumptions.mode === "explorer"
+                            ? "/app"
+                            : "/app/scenario"
                   }
                   onClick={() =>
                     update((s) => ({

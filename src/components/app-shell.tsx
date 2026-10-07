@@ -24,11 +24,14 @@ import { Onboarding } from "./onboarding";
 import { Badge } from "./ui";
 const nav = [
   ["", "Порівняти", ChartNoAxesCombined],
-  ["home", "Житло", Home],
+  ["property", "Нерухомість", Home],
   ["capital", "Мої активи", Landmark],
   ["plan", "Мої плани", Bookmark],
 ] as const;
 const extraNav = [
+  ["business", "Свій бізнес", Landmark],
+  ["home", "Житло / іпотека", Home],
+  ["offers", "Банківські пропозиції", Landmark],
   ["scenario", "Свій розрахунок", ChartNoAxesCombined],
   ["overview", "Огляд активів", LayoutDashboard],
   ["budget", "Бюджет", Wallet],
@@ -44,7 +47,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { state, ready, error, saved } = useCapital();
   if (ready && !state.onboarded && path === "/app/setup") return <Onboarding />;
   return (
-    <div className="app-layout">
+    <div
+      className={`app-layout ${["/app", "/app/property", "/app/business"].includes(path) ? "app-explorer" : ""}`}
+    >
       <aside className="sidebar">
         <Logo />
         <nav aria-label="Особистий кабінет">
