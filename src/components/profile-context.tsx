@@ -1,13 +1,20 @@
 "use client";
 import { createContext, useContext } from "react";
 import { useProfile } from "@/lib/storage/use-profile";
+import { useAccountSession } from "@/lib/storage/account-client";
+import { useCloudSync } from "@/lib/storage/cloud-sync";
+import { useTelemetry } from "@/lib/storage/telemetry";
 import type { Market } from "@/lib/data/schema";
 import { emptyMarket } from "@/lib/data/schema";
 import { acceptMarketResponse } from "@/lib/data/client-market";
 import { useEffect, useState } from "react";
 import { monthlyAmount, sum, cashFlow } from "@/lib/finance/calculations";
 import type { Line } from "@/lib/storage/schema";
-type Profile = ReturnType<typeof useProfile> & { market: Market };
+type Profile = ReturnType<typeof useProfile> & {
+  market: Market;
+  account: ReturnType<typeof useAccountSession>;
+  cloud: ReturnType<typeof useCloudSync>;
+};
 const context = createContext<Profile | null>(null);
 export function ProfileProvider({
   children,
@@ -16,7 +23,12 @@ export function ProfileProvider({
   children: React.ReactNode;
   initialMarket?: Market;
 }) {
-  const profile = useProfile();
+  const account = useAccountSession();
+  const profile = useProfile(
+    account.user ? `account:${account.user.id}` : "profile",
+  );
+  const cloud = useCloudSync(profile, account.user);
+  useTelemetry(account.user);
   const [market, setMarket] = useState<Market>(initialMarket);
   useEffect(() => {
     const controller = new AbortController();
@@ -51,7 +63,7 @@ export function ProfileProvider({
     };
   }, []);
   return (
-    <context.Provider value={{ ...profile, market }}>
+    <context.Provider value={{ ...profile, market, account, cloud }}>
       {children}
     </context.Provider>
   );

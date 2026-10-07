@@ -1,0 +1,387 @@
+{
+  "data": {
+    "status": true,
+    "metalRates": {
+      "gold": {
+        "rates": {
+          "one": {
+            "1": {
+              "size": "1",
+              "prices": {
+                "purchaseRate": "6 835.00",
+                "saleRate": "8 155.00"
+              }
+            },
+            "2": {
+              "size": "2",
+              "prices": {
+                "purchaseRate": "6 715.00",
+                "saleRate": "7 555.00"
+              }
+            },
+            "5": {
+              "size": "5",
+              "prices": {
+                "purchaseRate": "6 445.00",
+                "saleRate": "6 895.00"
+              }
+            },
+            "10": {
+              "size": "10",
+              "prices": {
+                "purchaseRate": "6 385.00",
+                "saleRate": "6 835.00"
+              }
+            },
+            "20": {
+              "size": "20",
+              "prices": {
+                "purchaseRate": "6 325.00",
+                "saleRate": "6 775.00"
+              }
+            },
+            "50": {
+              "size": "50",
+              "prices": {
+                "purchaseRate": "6 205.00",
+                "saleRate": "6 595.00"
+              }
+            },
+            "100": {
+              "size": "100",
+              "prices": {
+                "purchaseRate": "6 145.00",
+                "saleRate": "6 565.00"
+              }
+            },
+            "2.5": {
+              "size": "2.5",
+              "prices": {
+                "purchaseRate": "6 565.00",
+                "saleRate": "7 435.00"
+              }
+            },
+            "31.1": {
+              "size": "31.1",
+              "prices": {
+                "purchaseRate": "6 295.00",
+                "saleRate": "6 715.00"
+              }
+            }
+          },
+          "two": {
+            "1": {
+              "size": "1",
+              "prices": {
+                "purchaseRate": "5 935.00",
+                "saleRate": "6 415.00"
+              }
+            },
+            "2": {
+              "size": "2",
+              "prices": {
+                "purchaseRate": "5 935.00",
+                "saleRate": "6 415.00"
+              }
+            },
+            "5": {
+              "size": "5",
+              "prices": {
+                "purchaseRate": "5 815.00",
+                "saleRate": "6 295.00"
+              }
+            },
+            "10": {
+              "size": "10",
+              "prices": {
+                "purchaseRate": "5 815.00",
+                "saleRate": "6 295.00"
+              }
+            },
+            "20": {
+              "size": "20",
+              "prices": {
+                "purchaseRate": "5 815.00",
+                "saleRate": "6 295.00"
+              }
+            },
+            "50": {
+              "size": "50",
+              "prices": {
+                "purchaseRate": "5 785.00",
+                "saleRate": "6 235.00"
+              }
+            },
+            "100": {
+              "size": "100",
+              "prices": {
+                "purchaseRate": "5 785.00",
+                "saleRate": "6 235.00"
+              }
+            },
+            "2.5": {
+              "size": "2.5",
+              "prices": {
+                "purchaseRate": "5 935.00",
+                "saleRate": "6 415.00"
+              }
+            },
+            "31.1": {
+              "size": "31.1",
+              "prices": {
+                "purchaseRate": "5 785.00",
+                "saleRate": "6 235.00"
+              }
+            }
+          },
+          "three": {
+            "1": {
+              "size": "1",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "2": {
+              "size": "2",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "5": {
+              "size": "5",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "10": {
+              "size": "10",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "20": {
+              "size": "20",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "50": {
+              "size": "50",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "100": {
+              "size": "100",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "250": {
+              "size": "250",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "500": {
+              "size": "500",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "1000": {
+              "size": "1000",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "2.5": {
+              "size": "2.5",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            },
+            "31.1": {
+              "size": "31.1",
+              "prices": {
+                "purchaseRate": "5 605.00",
+                "saleRate": "6 015.00"
+              }
+            }
+          }
+        },
+        "date": "07.10.2026"
+      },
+      "silver": {
+        "rates": {
+          "one": {
+            "10": {
+              "size": "10",
+              "prices": {
+                "purchaseRate": "91.55",
+                "saleRate": "264.05"
+              }
+            },
+            "20": {
+              "size": "20",
+              "prices": {
+                "purchaseRate": "90.65",
+                "saleRate": "220.05"
+              }
+            },
+            "50": {
+              "size": "50",
+              "prices": {
+                "purchaseRate": "89.95",
+                "saleRate": "167.25"
+              }
+            },
+            "100": {
+              "size": "100",
+              "prices": {
+                "purchaseRate": "89.50",
+                "saleRate": "162.85"
+              }
+            },
+            "250": {
+              "size": "250",
+              "prices": {
+                "purchaseRate": "88.30",
+                "saleRate": "158.45"
+              }
+            },
+            "500": {
+              "size": "500",
+              "prices": {
+                "purchaseRate": "87.15",
+                "saleRate": "155.80"
+              }
+            },
+            "1000": {
+              "size": "1000",
+              "prices": {
+                "purchaseRate": "86.25",
+                "saleRate": "154.05"
+              }
+            }
+          },
+          "two": {
+            "10": {
+              "size": "10",
+              "prices": {
+                "purchaseRate": "80.10",
+                "saleRate": "145.25"
+              }
+            },
+            "20": {
+              "size": "20",
+              "prices": {
+                "purchaseRate": "80.10",
+                "saleRate": "145.25"
+              }
+            },
+            "50": {
+              "size": "50",
+              "prices": {
+                "purchaseRate": "80.10",
+                "saleRate": "145.25"
+              }
+            },
+            "100": {
+              "size": "100",
+              "prices": {
+                "purchaseRate": "80.10",
+                "saleRate": "145.25"
+              }
+            },
+            "250": {
+              "size": "250",
+              "prices": {
+                "purchaseRate": "80.10",
+                "saleRate": "145.25"
+              }
+            },
+            "500": {
+              "size": "500",
+              "prices": {
+                "purchaseRate": "80.10",
+                "saleRate": "145.25"
+              }
+            },
+            "1000": {
+              "size": "1000",
+              "prices": {
+                "purchaseRate": "80.10",
+                "saleRate": "145.25"
+              }
+            }
+          },
+          "three": {
+            "10": {
+              "size": "10",
+              "prices": {
+                "purchaseRate": "57.20",
+                "saleRate": "106.05"
+              }
+            },
+            "20": {
+              "size": "20",
+              "prices": {
+                "purchaseRate": "57.20",
+                "saleRate": "106.05"
+              }
+            },
+            "50": {
+              "size": "50",
+              "prices": {
+                "purchaseRate": "57.20",
+                "saleRate": "106.05"
+              }
+            },
+            "100": {
+              "size": "100",
+              "prices": {
+                "purchaseRate": "57.20",
+                "saleRate": "106.05"
+              }
+            },
+            "250": {
+              "size": "250",
+              "prices": {
+                "purchaseRate": "57.20",
+                "saleRate": "106.05"
+              }
+            },
+            "500": {
+              "size": "500",
+              "prices": {
+                "purchaseRate": "57.20",
+                "saleRate": "106.05"
+              }
+            },
+            "1000": {
+              "size": "1000",
+              "prices": {
+                "purchaseRate": "57.20",
+                "saleRate": "106.05"
+              }
+            }
+          }
+        },
+        "date": "07.10.2026"
+      }
+    }
+  },
+  "retrievedAt": "2026-10-07T16:40:31.152Z"
+}

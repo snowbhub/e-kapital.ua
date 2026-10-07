@@ -40,11 +40,13 @@ const extraNav = [
   ["portfolio", "Портфель", ChartNoAxesCombined],
   ["history", "Історія", History],
   ["settings", "Налаштування", Settings],
+  ["account", "Мій акаунт", LockKeyhole],
+  ["markets", "Метали й ринки", ChartNoAxesCombined],
 ] as const;
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const menu = useRef<HTMLDialogElement>(null);
-  const { state, ready, error, saved } = useCapital();
+  const { state, ready, error, saved, account, cloud } = useCapital();
   if (ready && !state.onboarded && path === "/app/setup") return <Onboarding />;
   return (
     <div
@@ -79,7 +81,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Grid2X2 size={18} /> Додаткові інструменти
           </button>
           <LockKeyhole size={17} />
-          <p>Приватно на вашому пристрої</p>
+          <p>
+            {account.user
+              ? "Особистий профіль + копія на пристрої"
+              : "Приватно на вашому пристрої"}
+          </p>
           <Link
             prefetch={false}
             href="/assets"
@@ -101,9 +107,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </div>
           <div>
-            <span>Без реєстрації</span>
+            <Link prefetch={false} href="/app/account" className="account-pill">
+              <LockKeyhole size={14} />
+              {account.user ? account.user.name : "Увійти"}
+            </Link>
             <Badge kind="green">
-              {!ready ? "На пристрої" : saved ? "Збережено" : "Зберігаємо…"}
+              {account.user
+                ? cloud.status
+                : !ready
+                  ? "На пристрої"
+                  : saved
+                    ? "Збережено"
+                    : "Зберігаємо…"}
             </Badge>
           </div>
         </div>

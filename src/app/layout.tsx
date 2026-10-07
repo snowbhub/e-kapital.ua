@@ -3,6 +3,7 @@ import "./globals.css";
 import "./decision.css";
 import "./automatic.css";
 import "./opportunities.css";
+import "./account.css";
 import { Pwa } from "@/components/pwa";
 import { siteUrl } from "@/lib/site";
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s | єКапітал",
   },
   description:
-    "Порівнюйте готові депозити, валюту, ОВДП та сценарії житла. Ставки, податки й інфляція вже враховані. Особисті суми залишаються на пристрої.",
+    "Порівнюйте депозити, валюту, ОВДП, метали та сценарії нерухомості. Враховуйте податки й інфляцію. Працюйте на пристрої або у своєму акаунті.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "єКапітал", statusBarStyle: "default" },
   icons: { icon: "/icons/wallet-192.png", apple: "/icons/wallet-180.png" },

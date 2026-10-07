@@ -140,6 +140,7 @@ function VentureWorkspace({ kind }: { kind: "property" | "business" }) {
         ],
       },
     }));
+    if (success) window.dispatchEvent(new Event("capital:plan-saved"));
     setSaving(false);
     setMessage(
       success ? "Проєкт збережено" : "Не вдалося зберегти. Спробуйте ще раз.",

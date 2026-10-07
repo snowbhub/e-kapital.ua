@@ -12,11 +12,17 @@ import { HousingDecision } from "@/components/housing-decision";
 import { DecisionPlans } from "@/components/decision-plans";
 import { AutomaticWorkspace } from "@/components/automatic-workspace";
 import { OpportunityWorkspace } from "@/components/opportunity-workspace";
+import { AccountWorkspace } from "@/components/account-workspace";
+import { AdminWorkspace } from "@/components/admin-workspace";
+import { MarketsWorkspace } from "@/components/markets-workspace";
 import {
   PropertyWorkspace,
   BusinessWorkspace,
 } from "@/components/venture-workspace";
 const pages = {
+  account: AccountWorkspace,
+  admin: AdminWorkspace,
+  markets: MarketsWorkspace,
   offers: AutomaticWorkspace,
   property: PropertyWorkspace,
   business: BusinessWorkspace,

@@ -4,9 +4,9 @@ import { useState, useRef } from "react";
 import { Download, Upload, Trash2, LockKeyhole } from "lucide-react";
 import { useCapital } from "./profile-context";
 import { Card, Field, TextField, Badge } from "./ui";
-import { encryptBackup, decryptBackup, saveState } from "@/lib/storage/db";
+import { encryptBackup, decryptBackup } from "@/lib/storage/db";
 export function SettingsView() {
-  const { state, update, market, erase } = useCapital();
+  const { state, update, market, erase, persist, account } = useCapital();
   const [password, setPassword] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
@@ -39,8 +39,8 @@ export function SettingsView() {
     try {
       const restored = await decryptBackup(await file.text(), password);
       if (confirm("Замінити всі поточні фінансові дані даними з backup?")) {
-        await saveState(restored);
-        update(() => restored);
+        if (!(await persist(() => restored)))
+          throw new Error("Не вдалося відновити дані");
         setMessage("Дані відновлено.");
       }
     } catch (e) {
@@ -77,10 +77,12 @@ export function SettingsView() {
           </h2>
         </div>
         <p className="muted" style={{ fontSize: 13, marginBottom: 22 }}>
-          Особисті дані зберігаються у браузері цього пристрою. Експортуйте
-          backup, щоб відновити їх після очищення браузера або на іншому
-          пристрої. Backup шифрується AES-GCM у вашому браузері, файл і пароль
-          не надсилаються на сервер.
+          {account.user
+            ? "Профіль синхронізується з сервером і має локальну копію."
+            : "Особисті дані зберігаються у браузері цього пристрою."}{" "}
+          Експортуйте backup, щоб відновити їх після очищення браузера або на
+          іншому пристрої. Backup шифрується AES-GCM у вашому браузері, файл і
+          пароль не надсилаються на сервер.
         </p>
         <div style={{ maxWidth: 400 }}>
           <TextField
@@ -153,10 +155,11 @@ export function SettingsView() {
         <h2 style={{ marginBottom: 15 }}>Приватність</h2>
         <p className="muted" style={{ fontSize: 13 }}>
           ЄКапітал не підключається до банків і не просить банківські логіни.
-          Аналітика не встановлена. Сервер обробляє тільки публічні ринкові
-          дані; ваші доходи, витрати, активи, цілі та backup залишаються на
-          пристрої. Хостинг може вести технічні журнали запитів. За допомогою
-          публічного посилання ви самі поширюєте вказаний гіпотетичний сценарій.
+          Гостьові дані залишаються на пристрої. Після входу ваш профіль
+          синхронізується із сервером. Аналітика дій і приблизна географія за IP
+          — лише за окремою згодою в акаунті. Backup шифрується локально.
+          Хостинг може вести технічні журнали запитів. За допомогою публічного
+          посилання ви самі поширюєте вказаний гіпотетичний сценарій.
         </p>
         <Link href="/privacy" className="inline-link" style={{ marginTop: 15 }}>
           Політика приватності ↗

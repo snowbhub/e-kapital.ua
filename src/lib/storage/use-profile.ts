@@ -2,9 +2,10 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { initialState, rollover, type State } from "./schema";
 import { loadState, saveState, deleteState } from "./db";
-export function useProfile() {
+export function useProfile(scope = "profile") {
   const [state, setState] = useState<State>(initialState);
   const [ready, setReady] = useState(false);
+  const [loadedScope, setLoadedScope] = useState("");
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const chain = useRef(Promise.resolve());
@@ -13,13 +14,18 @@ export function useProfile() {
   const current = useRef(state);
   useEffect(() => {
     let active = true;
-    loadState()
+    setReady(false);
+    revision.current++;
+    if (pending.current) clearTimeout(pending.current);
+    chain.current
+      .then(() => loadState(scope))
       .then((value) => {
         if (active) {
           const loaded = rollover(value || initialState());
           current.current = loaded;
           setState(loaded);
           setReady(true);
+          setLoadedScope(scope);
         }
       })
       .catch(() => {
@@ -31,14 +37,14 @@ export function useProfile() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [scope]);
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || loadedScope !== scope) return;
     const version = ++revision.current;
     setSaved(false);
     const timer = setTimeout(() => {
       chain.current = chain.current
-        .then(() => saveState(state))
+        .then(() => saveState(state, scope))
         .then(() => {
           if (revision.current === version) {
             setSaved(true);
@@ -53,7 +59,7 @@ export function useProfile() {
     }, 250);
     pending.current = timer;
     return () => clearTimeout(timer);
-  }, [state, ready]);
+  }, [state, ready, scope, loadedScope]);
   const update = useCallback((fn: (s: State) => State) => {
     revision.current++;
     setSaved(false);
@@ -67,7 +73,7 @@ export function useProfile() {
       if (pending.current) clearTimeout(pending.current);
       update(fn);
       const snapshot = current.current;
-      const write = chain.current.then(() => saveState(snapshot));
+      const write = chain.current.then(() => saveState(snapshot, scope));
       chain.current = write.catch(() => {});
       try {
         await write;
@@ -79,19 +85,28 @@ export function useProfile() {
         return false;
       }
     },
-    [update],
+    [update, scope],
   );
   const erase = useCallback(async () => {
     revision.current++;
     if (pending.current) clearTimeout(pending.current);
     await chain.current;
-    await deleteState();
+    await deleteState(scope);
     const blank = initialState();
-    await saveState(blank);
+    await saveState(blank, scope);
     current.current = blank;
     setState(blank);
     setError("");
     setSaved(true);
-  }, []);
-  return { state, update, persist, ready, error, saved, erase };
+  }, [scope]);
+  return {
+    state,
+    update,
+    persist,
+    ready: ready && loadedScope === scope,
+    error,
+    saved,
+    erase,
+    scope,
+  };
 }

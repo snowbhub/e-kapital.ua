@@ -140,7 +140,10 @@ export function HousingDecision() {
         ],
       },
     }));
-    if (stored) setSaved(true);
+    if (stored) {
+      setSaved(true);
+      window.dispatchEvent(new Event("capital:plan-saved"));
+    }
   }
   return (
     <>

@@ -176,7 +176,10 @@ export function DecisionWorkspace() {
         ],
       },
     }));
-    if (stored) setSavedId(id);
+    if (stored) {
+      setSavedId(id);
+      window.dispatchEvent(new Event("capital:plan-saved"));
+    }
   }
   return (
     <>

@@ -141,6 +141,7 @@ export function OpportunityWorkspace() {
     }));
     setSaving(false);
     setSaved(result);
+    if (result) window.dispatchEvent(new Event("capital:plan-saved"));
     if (!result) setError("Не вдалося зберегти. Спробуйте ще раз.");
   };
   const h = historicalContext(market, historyYears, date);
@@ -777,7 +778,12 @@ function OutcomeChart({
         Зараз
       </text>
       <text x="580" y="215" textAnchor="end" fill="#a0afbd" fontSize="12">
-        Через {selected.rows.at(-1)!.month / 12} років
+        Через {selected.rows.at(-1)!.month / 12}{" "}
+        {selected.rows.at(-1)!.month === 12
+          ? "рік"
+          : selected.rows.at(-1)!.month === 36
+            ? "роки"
+            : "років"}
       </text>
     </svg>
   );

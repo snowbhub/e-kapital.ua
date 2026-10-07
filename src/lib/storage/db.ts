@@ -6,21 +6,22 @@ const db = () =>
       db.createObjectStore("state");
     },
   });
-export async function loadState() {
+export async function loadState(scope = "profile") {
   const d = await db();
-  const raw = await d.get("state", "profile");
+  const raw = await d.get("state", scope);
   d.close();
   return raw ? stateSchema.parse(raw) : null;
 }
-export async function saveState(state: State) {
+export async function saveState(state: State, scope = "profile") {
   const parsed = stateSchema.parse(state);
   const d = await db();
-  await d.put("state", parsed, "profile");
+  await d.put("state", parsed, scope);
   d.close();
 }
-export async function deleteState() {
+export async function deleteState(scope = "profile") {
   const d = await db();
-  await d.clear("state");
+  await d.delete("state", scope);
+  await d.delete("state", `cloud:${scope}`);
   d.close();
   for (let i = localStorage.length - 1; i >= 0; i--) {
     const key = localStorage.key(i);
@@ -30,6 +31,27 @@ export async function deleteState() {
   await Promise.all(
     names.filter((k) => k.startsWith("ek-user-")).map((k) => caches.delete(k)),
   );
+}
+export async function cloudBaseline(scope: string) {
+  const d = await db(),
+    raw = await d.get("state", `cloud:${scope}`);
+  d.close();
+  return raw
+    ? { revision: Number(raw.revision), state: stateSchema.parse(raw.state) }
+    : null;
+}
+export async function saveCloudBaseline(
+  scope: string,
+  revision: number,
+  state: State,
+) {
+  const d = await db();
+  await d.put(
+    "state",
+    { revision, state: stateSchema.parse(state) },
+    `cloud:${scope}`,
+  );
+  d.close();
 }
 const bytes = (s: string) => new TextEncoder().encode(s);
 const base64 = (a: Uint8Array) =>

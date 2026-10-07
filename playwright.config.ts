@@ -10,7 +10,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: process.env.TEST_BASE_URL || "http://127.0.0.1:3000",
+    baseURL: process.env.TEST_BASE_URL || process.env.AUTH_TEST_BASE_URL || "http://127.0.0.1:3000",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
