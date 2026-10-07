@@ -12,11 +12,21 @@ export function useProfile(scope = "profile") {
   const revision = useRef(0);
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
   const current = useRef(state);
+  const activeScope = useRef("");
   useEffect(() => {
     let active = true;
     setReady(false);
     revision.current++;
-    if (pending.current) clearTimeout(pending.current);
+    if (pending.current) {
+      clearTimeout(pending.current);
+      if (activeScope.current && activeScope.current !== scope) {
+        const previousScope = activeScope.current;
+        const snapshot = current.current;
+        chain.current = chain.current
+          .then(() => saveState(snapshot, previousScope))
+          .catch(() => {});
+      }
+    }
     chain.current
       .then(() => loadState(scope))
       .then((value) => {
@@ -25,6 +35,7 @@ export function useProfile(scope = "profile") {
           current.current = loaded;
           setState(loaded);
           setReady(true);
+          activeScope.current = scope;
           setLoadedScope(scope);
         }
       })

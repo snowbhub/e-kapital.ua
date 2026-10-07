@@ -34,8 +34,17 @@ const refresh = unstable_cache(
   { revalidate: 21600 },
 );
 export async function GET(req: Request) {
-  const value = await refresh(),
-    content = JSON.stringify(value),
+  const cached = await refresh();
+  const today = new Date().toISOString().slice(0, 10);
+  const value = {
+    ...cached,
+    quotes: cached.quotes.filter(
+      (q) =>
+        q.date <= today &&
+        Date.parse(today) - Date.parse(q.date) <= 7 * 86400000,
+    ),
+  };
+  const content = JSON.stringify(value),
     etag = `"${createHash("sha256").update(content).digest("hex")}"`;
   const headers = {
     ETag: etag,
