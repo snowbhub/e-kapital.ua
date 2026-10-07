@@ -1,7 +1,7 @@
 name: Account integration
 on:
   push:
-    branches: [main]
+    branches: [main, feature/accounts-admin-metals]
   pull_request:
 permissions:
   contents: read
